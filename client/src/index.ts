@@ -3,11 +3,11 @@ import { w3cwebsocket as WebSocketClient } from "websocket";
 const client = new WebSocketClient("ws://localhost:8000/ws");
 
 client.onerror = error => {
-    console.log("Connection failed", error);
+    console.info("Connection failed", error);
 };
 
 client.onopen = () => {
-    console.log("Connected");
+    console.info("Connected");
     const sayHello = () => {
         if (client.readyState === client.OPEN) {
             client.send("Hello from client!");
@@ -17,9 +17,9 @@ client.onopen = () => {
 };
 
 client.onclose = () => {
-    console.log(`Connection closed`);
+    console.info(`Connection closed`);
 };
 
 client.onmessage = message => {
-    console.log("Received message", message);
+    console.info("Received message", message);
 };

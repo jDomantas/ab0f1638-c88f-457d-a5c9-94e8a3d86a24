@@ -9,7 +9,8 @@
             true,
             "double"
         ],
-        "arrow-parens": false
+        "arrow-parens": false,
+        "no-console": [true, "log"]
     },
     "rulesDirectory": []
 }
