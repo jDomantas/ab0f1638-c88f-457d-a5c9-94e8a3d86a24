@@ -2,7 +2,7 @@ extern crate ws;
 extern crate log;
 extern crate env_logger;
 
-use ws::{listen, Handler, Request, Response, Result};
+use ws::{listen, Handler, Request, Response, Result, Message, Sender};
 use std::{io, io::prelude::*, fs, path::Path};
 
 const INDEX_PATH: &str = "../client/target/index.html";
@@ -10,7 +10,9 @@ const JS_PATH: &str = "../client/target/bundle.js";
 const SOURCE_MAP_PATH: &str = "../client/target/bundle.js.map";
 const CSS_PATH: &str = "../client/target/style.css";
 
-struct Server;
+struct Server {
+    out: Sender,
+}
 
 impl Handler for Server {
     fn on_request(&mut self, req: &Request) -> Result<Response> {
@@ -19,15 +21,21 @@ impl Handler for Server {
             "/bundle.js" => Ok(ok(JS_PATH)?),
             "/bundle.js.map" => Ok(ok(SOURCE_MAP_PATH)?),
             "/style.css" => Ok(ok(CSS_PATH)?),
+            "/ws" => Response::from_request(req),
             _ => Ok(Response::new(404, "Not Found", b"404 - Not Found".to_vec())),
         }
+    }
+
+    fn on_message(&mut self, msg: Message) -> Result<()> {
+        info!("Got message: {:?}", msg);
+        self.out.broadcast(msg);
     }
 }
 
 fn main() {
     env_logger::init();
 
-    if let Err(e) = listen("127.0.0.1:8000", |_| Server) {
+    if let Err(e) = listen("127.0.0.1:8000", |out| Server { out }) {
         eprintln!("Failed to start server");
         eprintln!("{}", e);
     }
