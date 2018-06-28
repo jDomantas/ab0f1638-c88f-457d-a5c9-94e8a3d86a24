@@ -13,7 +13,9 @@
         "url": "https://github.com/jDomantas/ab0f1638-c88f-457d-a5c9-94e8a3d86a24.git"
     },
     "author": "D. Jadenkus, V. Strimaitis",
-    "dependencies": {},
+    "dependencies": {
+        "unused-webpack-plugin": "^1.2.0"
+    },
     "devDependencies": {
         "copy-webpack-plugin": "^4.5.2",
         "ts-loader": "^4.4.2",

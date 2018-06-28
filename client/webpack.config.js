@@ -1,5 +1,6 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const UnusedWebpackPlugin = require('unused-webpack-plugin');
 
 module.exports = {
     mode: "development",
@@ -24,6 +25,9 @@ module.exports = {
     plugins: [
         new CopyWebpackPlugin([
             { from: './static/*', to: './', flatten: true }
-        ])
+        ]),
+        new UnusedWebpackPlugin({
+            directories : [path.join(__dirname, 'src')]
+        }),
     ]
 };
