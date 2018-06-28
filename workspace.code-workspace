@@ -5,7 +5,17 @@
         },
         {
             "path": "client"
+        },
+        {
+            "path": ".",
+            "name": "root"
         }
     ],
-    "settings": {}
+    "settings": {
+        "files.exclude": {
+            "client": true,
+            "server": true,
+            ".vscode": true
+        }
+    }
 }
