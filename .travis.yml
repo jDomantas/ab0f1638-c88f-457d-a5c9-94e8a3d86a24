@@ -3,7 +3,7 @@ matrix:
     - language: rust
       rust: 1.27.0
       cache: cargo
-      before_script:
+      before_install:
         - cd server
 
     - language: node_js
@@ -14,8 +14,6 @@ matrix:
       env:
         - NODE_ENV=development
       before_install:
-        - cd client
-      before_script:
         - cd client
       script:
         - npm run lint
