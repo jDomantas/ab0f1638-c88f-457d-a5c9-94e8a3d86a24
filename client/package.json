@@ -1,0 +1,25 @@
+{
+    "name": "client",
+    "version": "0.0.1",
+    "description": "",
+    "main": "index.ts",
+    "scripts": {
+        "build": "webpack --progress",
+        "lint": "tslint -p tsconfig.json -c tslint.json src/**/*.ts",
+        "lint:fix": "tslint -p tsconfig.json -c tslint.json src/**/*.ts --fix"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/jDomantas/ab0f1638-c88f-457d-a5c9-94e8a3d86a24.git"
+    },
+    "author": "D. Jadenkus, V. Strimaitis",
+    "dependencies": {},
+    "devDependencies": {
+        "copy-webpack-plugin": "^4.5.2",
+        "ts-loader": "^4.4.2",
+        "tslint": "^5.10.0",
+        "typescript": "^2.9.2",
+        "webpack": "^4.12.2",
+        "webpack-cli": "^3.0.8"
+    }
+}
