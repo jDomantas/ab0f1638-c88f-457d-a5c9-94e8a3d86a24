@@ -12,7 +12,8 @@ matrix:
         directories:
           - $HOME/.npm
       env:
-        - NODE_ENV=development
+        global:
+          - NODE_ENV=development
       before_script:
         - cd client
       script:
