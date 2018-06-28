@@ -1,6 +1,6 @@
 import { w3cwebsocket as WebSocketClient } from "websocket";
 
-const client = new WebSocketClient("ws://localhost:8000/ws", ["magic-protocol"]);
+const client = new WebSocketClient("ws://localhost:8000/ws");
 
 client.onerror = error => {
     console.log("Connection failed", error);
