@@ -8,7 +8,8 @@
         "quotemark": [
             true,
             "double"
-        ]
+        ],
+        "arrow-parens": false
     },
     "rulesDirectory": []
 }

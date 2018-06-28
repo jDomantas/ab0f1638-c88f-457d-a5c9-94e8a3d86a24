@@ -14,7 +14,9 @@
     },
     "author": "D. Jadenkus, V. Strimaitis",
     "dependencies": {
-        "unused-webpack-plugin": "^1.2.0"
+        "@types/websocket": "0.0.39",
+        "unused-webpack-plugin": "^1.2.0",
+        "websocket": "^1.0.26"
     },
     "devDependencies": {
         "copy-webpack-plugin": "^4.5.2",
