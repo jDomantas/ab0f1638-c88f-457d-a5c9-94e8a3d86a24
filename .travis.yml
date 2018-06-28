@@ -13,6 +13,8 @@ matrix:
           - $HOME/.npm
       env:
         - NODE_ENV=development
+      before_install:
+        - cd client
       before_script:
         - cd client
       script:
