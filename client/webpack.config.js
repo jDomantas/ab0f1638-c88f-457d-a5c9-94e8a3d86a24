@@ -15,7 +15,7 @@ module.exports = {
             path.resolve(__dirname, './src'),
             path.resolve(__dirname, './node_modules')
         ],
-        extensions: [".ts"]
+        extensions: [".ts", ".js"]
     },
     module: {
         rules: [

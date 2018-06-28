@@ -1,32 +1,25 @@
-import { client as WebSocketClient } from "websocket";
+import { w3cwebsocket as WebSocketClient } from "websocket";
 
-const client = new WebSocketClient();
+const client = new WebSocketClient("ws://localhost:8000/ws", ["magic-protocol"]);
 
-client.on("connectFailed", error => {
+client.onerror = error => {
     console.log("Connection failed", error);
-});
+};
 
-client.on("connect", connection => {
+client.onopen = () => {
     console.log("Connected");
-
-    connection.on("message", message => {
-        console.log("Received message", message);
-    });
-
-    connection.on("error", error => {
-        console.log("Received error", error);
-    });
-
-    connection.on("close", (code, description) => {
-        console.log(`Connection closed. Code: ${code}. Description: ${description}`);
-    });
-
     const sayHello = () => {
-        if (connection.connected) {
-            connection.sendUTF("Hello from client!");
+        if (client.readyState === client.OPEN) {
+            client.send("Hello from client!");
         }
     };
     sayHello();
-});
+};
 
-client.connect("ws://localhost:8080/", "magic-protocol");
+client.onclose = () => {
+    console.log(`Connection closed`);
+};
+
+client.onmessage = message => {
+    console.log("Received message", message);
+};

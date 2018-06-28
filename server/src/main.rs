@@ -1,4 +1,5 @@
 extern crate ws;
+#[macro_use]
 extern crate log;
 extern crate env_logger;
 
@@ -28,7 +29,7 @@ impl Handler for Server {
 
     fn on_message(&mut self, msg: Message) -> Result<()> {
         info!("Got message: {:?}", msg);
-        self.out.broadcast(msg);
+        self.out.broadcast(msg)
     }
 }
 
