@@ -1,54 +1,46 @@
 extern crate ws;
 #[macro_use]
 extern crate log;
-extern crate env_logger;
+extern crate fern;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde_json;
 
-use ws::{listen, Handler, Request, Response, Result, Message, Sender};
-use std::{io, io::prelude::*, fs, path::Path};
-
-const INDEX_PATH: &str = "../client/target/index.html";
-const JS_PATH: &str = "../client/target/bundle.js";
-const SOURCE_MAP_PATH: &str = "../client/target/bundle.js.map";
-const CSS_PATH: &str = "../client/target/style.css";
-
-struct Server {
-    out: Sender,
-}
-
-impl Handler for Server {
-    fn on_request(&mut self, req: &Request) -> Result<Response> {
-        match req.resource() {
-            "/" => Ok(ok(INDEX_PATH)?),
-            "/bundle.js" => Ok(ok(JS_PATH)?),
-            "/bundle.js.map" => Ok(ok(SOURCE_MAP_PATH)?),
-            "/style.css" => Ok(ok(CSS_PATH)?),
-            "/ws" => Response::from_request(req),
-            _ => Ok(Response::new(404, "Not Found", b"404 - Not Found".to_vec())),
-        }
-    }
-
-    fn on_message(&mut self, msg: Message) -> Result<()> {
-        info!("Got message: {:?}", msg);
-        self.out.broadcast(msg)
-    }
-}
+mod game;
+mod network;
+mod result_ext;
+mod server;
 
 fn main() {
-    env_logger::init();
-
-    if let Err(e) = listen("127.0.0.1:8000", |out| Server { out }) {
-        eprintln!("Failed to start server");
+    if let Err(e) = setup_logger() {
+        eprintln!("Failed to set up logger:");
         eprintln!("{}", e);
+        std::process::exit(1);
     }
+
+    let mut game = game::Game::new();
+    let world = game.initial_world();
+
+    let websocket_server = network::WebsocketServer::listen("127.0.0.1:8000");
+    let mut server = server::Server::new(websocket_server, game, world);
+
+    server.run();
 }
 
-fn ok<P: AsRef<Path>>(path: P) -> io::Result<Response> {
-    Ok(Response::new(200, "OK", read_file(path)?))
-}
-
-fn read_file<P: AsRef<Path>>(path: P) -> io::Result<Vec<u8>> {
-    let mut file = fs::File::open(path)?;
-    let mut data = Vec::new();
-    file.read_to_end(&mut data)?;
-    Ok(data)
+fn setup_logger() -> Result<(), fern::InitError> {
+    fern::Dispatch::new()
+        .format(move |out, message, record| {
+            out.finish(format_args!(
+                "[{}][{}] {}",
+                record.level(),
+                record.target(),
+                message,
+            ))
+        })
+        .level(log::LevelFilter::Info)
+        .level_for("server", log::LevelFilter::Debug)
+        .chain(std::io::stdout())
+        .apply()?;
+    Ok(())
 }
