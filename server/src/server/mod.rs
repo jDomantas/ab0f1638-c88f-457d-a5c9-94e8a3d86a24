@@ -61,19 +61,19 @@ impl Server {
     }
 
     pub fn run(&mut self) {
-        let mut last_frame = Instant::now();
+        let mut last_frame_time = Instant::now();
         let frames_per_second = 60;
         let frame_time = Duration::from_nanos(1_000_000_000 / frames_per_second);
 
         loop {
             self.process_network_events();
             let current_time = Instant::now();
-            let next_frame = last_frame + frame_time;
-            if next_frame > current_time {
-                thread::sleep(next_frame - current_time);
+            let next_frame_time = last_frame_time + frame_time;
+            if next_frame_time > current_time {
+                thread::sleep(next_frame_time - current_time);
             } else {
                 self.try_run_frame();
-                last_frame += frame_time;
+                last_frame_time += frame_time;
             }
         }
     }
