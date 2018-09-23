@@ -10,7 +10,10 @@
             "double"
         ],
         "arrow-parens": false,
-        "no-console": [true, "log"]
+        "no-console": [true, "log"],
+        "no-empty": false,
+        "interface-name": false,
+        "max-classes-per-file": false
     },
     "rulesDirectory": []
 }
