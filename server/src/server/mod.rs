@@ -105,9 +105,9 @@ impl Server {
     fn player_connected(&mut self, connection: ConnectionId) {
         let player_id = self.generate_player_id();
         self.next_update_info.new_players.push(player_id.clone());
-        self.send_world_state(connection);
         self.clients
             .insert(connection, Client::new(player_id, self.frame));
+        self.send_world_state(connection);
     }
 
     fn received_message(&mut self, sender: ConnectionId, message: Message) {
@@ -208,7 +208,7 @@ impl Server {
     }
 
     fn send_world_state(&mut self, to: ConnectionId) {
-        let json = self.build_world_json();
+        let json = self.build_world_json(to);
         self.network_server
             .send(to, Message::new(json.into_bytes()));
     }
@@ -246,15 +246,19 @@ impl Server {
         }
     }
 
-    fn build_world_json(&mut self) -> String {
+    fn build_world_json(&mut self, client: ConnectionId) -> String {
         #[derive(Serialize)]
         struct Data<'a> {
+            #[serde(rename = "localPlayer")]
+            local_player: u64,
             frame: u64,
             world: &'a str,
         }
+        let player_id = self.clients[&client].player_id().to_u64();
         let world = self.game.serialize_world(&self.world);
         let world_bytes = self.game.buffer_data(&world);
         let data = Data {
+            local_player: player_id,
             frame: self.frame,
             // Temporary hack: currently we are sending dummy values anyways.
             // Eventually we will probably need to send binary messages instead of json.
@@ -267,7 +271,9 @@ impl Server {
         #[derive(Serialize, Default)]
         struct Data {
             frame: u64,
+            #[serde(rename = "newPlayers")]
             new_players: Vec<u64>,
+            #[serde(rename = "removedPlayers")]
             removed_players: Vec<u64>,
             inputs: HashMap<String, String>,
         }

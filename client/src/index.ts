@@ -1,25 +1,29 @@
-import { w3cwebsocket as WebSocketClient } from "websocket";
+import { Client } from "client";
+import { Game, World } from "game";
+import { NetworkHandler } from "network";
 
-const client = new WebSocketClient("ws://localhost:8000/ws");
+const handler = new NetworkHandler();
+const game = new Game();
+let client: Client;
 
-client.onerror = error => {
-    console.info("Connection failed", error);
+handler.onWorldState = worldState => {
+    console.debug("Initial world state:", worldState);
+    const buffer = game.allocateBuffer(0); // FIXME: should be size of received world
+    buffer.putData(worldState.world);
+    const playerId = game.createPlayerId(worldState.localPlayer);
+    client = new Client(game, playerId, worldState.frame, buffer);
+    sendInput(client.currentFrameNumber + 1);
 };
 
-client.onopen = () => {
-    console.info("Connected");
-    const sayHello = () => {
-        if (client.readyState === client.OPEN) {
-            client.send("Hello from client!");
-        }
-    };
-    sayHello();
+handler.onPlayerInputs = inputs => {
+    client.step(inputs);
+    sendInput(inputs.frame + 1);
 };
 
-client.onclose = () => {
-    console.info(`Connection closed`);
-};
-
-client.onmessage = message => {
-    console.info("Received message", message);
-};
+function sendInput(frame: number) {
+    console.debug(`Sending input for frame ${frame}`);
+    handler.sendInput({
+        frame,
+        input: "foobar",
+    });
+}
