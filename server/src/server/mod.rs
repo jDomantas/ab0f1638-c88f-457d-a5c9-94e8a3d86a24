@@ -208,7 +208,7 @@ impl Server {
     }
 
     fn send_world_state(&mut self, to: ConnectionId) {
-        let json = self.build_world_json();
+        let json = self.build_world_json(to);
         self.network_server
             .send(to, Message::new(json.into_bytes()));
     }
@@ -246,15 +246,18 @@ impl Server {
         }
     }
 
-    fn build_world_json(&mut self) -> String {
+    fn build_world_json(&mut self, client: ConnectionId) -> String {
         #[derive(Serialize)]
         struct Data<'a> {
+            local_player: u64,
             frame: u64,
             world: &'a str,
         }
+        let player_id = self.clients[&client].player_id().to_u64();
         let world = self.game.serialize_world(&self.world);
         let world_bytes = self.game.buffer_data(&world);
         let data = Data {
+            local_player: player_id,
             frame: self.frame,
             // Temporary hack: currently we are sending dummy values anyways.
             // Eventually we will probably need to send binary messages instead of json.
