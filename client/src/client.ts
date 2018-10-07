@@ -4,19 +4,19 @@ import { PlayerInputMessage } from "network";
 export class Client {
     private game: Game;
     private world: World;
-    private _currentFrame: number;
+    private currentFrame: number;
     private localPlayer: PlayerId;
 
     public constructor(game: Game, localPlayer: PlayerId, currentFrame: number, worldBuf: VmBuffer) {
         this.game = game;
         this.localPlayer = localPlayer;
-        this._currentFrame = currentFrame;
+        this.currentFrame = currentFrame;
         this.world = this.game.deserializeWorld(worldBuf);
         worldBuf.free();
     }
 
-    public get currentFrame(): number {
-        return this._currentFrame;
+    public get currentFrameNumber(): number {
+        return this.currentFrame;
     }
 
     public step(inputs: PlayerInputMessage) {
@@ -30,7 +30,7 @@ export class Client {
 
         inputs.newPlayers.forEach(id => this.addPlayer(id));
 
-        this._currentFrame = inputs.frame;
+        this.currentFrame = inputs.frame;
     }
 
     private addPlayer(player: number) {

@@ -1,6 +1,6 @@
+import { Client } from "client";
 import { Game, World } from "game";
 import { NetworkHandler } from "network";
-import { Client } from "client";
 
 const handler = new NetworkHandler();
 const game = new Game();
@@ -12,7 +12,7 @@ handler.onWorldState = worldState => {
     buffer.putData(worldState.world);
     const playerId = game.createPlayerId(worldState.localPlayer);
     client = new Client(game, playerId, worldState.frame, buffer);
-    sendInput(client.currentFrame + 1);
+    sendInput(client.currentFrameNumber + 1);
 };
 
 handler.onPlayerInputs = inputs => {
