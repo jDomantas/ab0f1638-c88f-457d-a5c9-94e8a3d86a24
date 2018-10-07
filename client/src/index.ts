@@ -12,7 +12,7 @@ handler.onWorldState = worldState => {
     console.debug("Initial world state:", worldState);
     const buffer = game.allocateBuffer(0); // FIXME: should be size of received world
     buffer.putData(worldState.world);
-    const playerId = game.createPlayerId(worldState.local_player);
+    const playerId = game.createPlayerId(worldState.localPlayer);
     client = new Client(game, playerId, worldState.frame, buffer);
     sendInput(currentFrame + 1);
 };

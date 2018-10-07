@@ -249,6 +249,7 @@ impl Server {
     fn build_world_json(&mut self, client: ConnectionId) -> String {
         #[derive(Serialize)]
         struct Data<'a> {
+            #[serde(rename = "localPlayer")]
             local_player: u64,
             frame: u64,
             world: &'a str,
@@ -270,7 +271,9 @@ impl Server {
         #[derive(Serialize, Default)]
         struct Data {
             frame: u64,
+            #[serde(rename = "newPlayers")]
             new_players: Vec<u64>,
+            #[serde(rename = "removedPlayers")]
             removed_players: Vec<u64>,
             inputs: HashMap<String, String>,
         }

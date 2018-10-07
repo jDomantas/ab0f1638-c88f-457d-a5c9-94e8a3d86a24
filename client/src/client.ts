@@ -16,7 +16,7 @@ export class Client {
     }
 
     public step(inputs: PlayerInputMessage) {
-        inputs.removed_players.forEach(id => this.removePlayer(id));
+        inputs.removedPlayers.forEach(id => this.removePlayer(id));
 
         this.updateWorld();
 
@@ -24,7 +24,7 @@ export class Client {
         ids.sort((a, b) => a - b);
         ids.forEach(id => this.updatePlayer(id, inputs.inputs[id.toString()]));
 
-        inputs.new_players.forEach(id => this.addPlayer(id));
+        inputs.newPlayers.forEach(id => this.addPlayer(id));
 
         this.currentFrame = inputs.frame;
     }
