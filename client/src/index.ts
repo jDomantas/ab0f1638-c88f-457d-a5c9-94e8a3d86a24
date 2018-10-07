@@ -2,7 +2,6 @@ import { Game, World } from "game";
 import { NetworkHandler } from "network";
 
 const handler = new NetworkHandler();
-console.log(handler.onWorldState);
 const game = new Game();
 let world: World;
 let currentFrame: number;
@@ -18,7 +17,7 @@ handler.onWorldState = worldState => {
 };
 
 handler.onPlayerInputs = inputs => {
-    console.log("Player inputs:", inputs);
+    console.debug("Player inputs:", inputs);
     inputs.removed_players.forEach(numericId => {
         const id = game.createPlayerId(numericId);
         world = game.removePlayer(id, world);
@@ -47,11 +46,9 @@ handler.onPlayerInputs = inputs => {
 };
 
 function sendInput(frame: number) {
-    console.log(`Sending input for frame ${frame}`);
+    console.debug(`Sending input for frame ${frame}`);
     handler.sendInput({
         frame,
         input: "foobar",
     });
 }
-
-console.log(handler.onWorldState);

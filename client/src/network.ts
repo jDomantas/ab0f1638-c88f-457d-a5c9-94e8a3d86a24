@@ -59,7 +59,7 @@ export class NetworkHandler {
     }
 
     private onMessage(message: any) {
-        console.log("Received message:", message);
+        console.debug("Received message:", message);
         const payload = parseMessagePayload(message);
         if (isWorldState(payload)) {
             this.receivedWorldState = true;
