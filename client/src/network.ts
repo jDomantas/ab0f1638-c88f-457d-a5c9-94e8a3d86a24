@@ -3,6 +3,7 @@ import { w3cwebsocket as WebSocketClient } from "websocket";
 type ServerMessage = WorldStateMessage | PlayerInputMessage;
 
 export interface WorldStateMessage {
+    local_player: number;
     frame: number;
     world: string;
 }

@@ -47,8 +47,7 @@ export class Client {
 
     private updatePlayer(player: number, serializedInput: string) {
         const id = this.game.createPlayerId(player);
-        // TODO: buffer size should depend on serialized input size
-        const inputBuffer = this.game.allocateBuffer(0);
+        const inputBuffer = this.game.allocateBuffer(0); // FIXME: should be size of received input
         inputBuffer.putData(serializedInput);
         const input = this.game.deserializeInput(inputBuffer);
         inputBuffer.free();
