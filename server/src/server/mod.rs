@@ -105,9 +105,9 @@ impl Server {
     fn player_connected(&mut self, connection: ConnectionId) {
         let player_id = self.generate_player_id();
         self.next_update_info.new_players.push(player_id.clone());
-        self.send_world_state(connection);
         self.clients
             .insert(connection, Client::new(player_id, self.frame));
+        self.send_world_state(connection);
     }
 
     fn received_message(&mut self, sender: ConnectionId, message: Message) {
