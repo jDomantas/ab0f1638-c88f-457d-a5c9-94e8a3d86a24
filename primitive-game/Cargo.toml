@@ -1,0 +1,10 @@
+[package]
+name = "primitive-game"
+version = "0.1.0"
+authors = ["djade <djadenkus@gmail.com>"]
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
