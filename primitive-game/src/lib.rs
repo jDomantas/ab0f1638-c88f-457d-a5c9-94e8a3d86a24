@@ -3,6 +3,8 @@
 #[repr(transparent)]
 pub struct Handle(pub i32);
 
+static DUMMY_BUFFER: &[u8] = &[1, 1, 2, 3, 5, 8, 11];
+
 const DUMMY_HANDLE: Handle = Handle(0);
 
 #[no_mangle]
@@ -30,10 +32,10 @@ pub extern fn allocate_buffer(size: i32) -> Handle { DUMMY_HANDLE }
 pub extern fn free_handle(handle: Handle) {}
 
 #[no_mangle]
-pub extern fn buffer_ptr(buffer: Handle) -> i32 { 0 }
+pub extern fn buffer_ptr(buffer: Handle) -> i32 { DUMMY_BUFFER.as_ptr() as usize as i32 }
 
 #[no_mangle]
-pub extern fn buffer_size(buffer: Handle) -> i32 { 0 }
+pub extern fn buffer_size(buffer: Handle) -> i32 { DUMMY_BUFFER.len() as i32 }
 
 #[no_mangle]
 pub extern fn deserialize_world(buffer: Handle) -> Handle { DUMMY_HANDLE }

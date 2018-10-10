@@ -20,6 +20,17 @@ matrix:
         - cargo build --verbose --target=wasm32-unknown-unknown
         - cargo test --verbose
 
+    - name: Primitive game builder
+      language: rust
+      rust: 1.29.0
+      cache: cargo
+      before_install:
+        - cd primitive-game
+      install:
+        - cargo build --verbose --bin builder --features=binaries
+      script:
+        - cargo build --verbose --bin builder --features=binaries
+
     - name: Client
       language: node_js
       node_js: 8
