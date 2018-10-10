@@ -1,12 +1,14 @@
 matrix:
   include:
-    - language: rust
+    - name: Server
+      language: rust
       rust: 1.27.0
       cache: cargo
       before_install:
         - cd server
 
-    - language: rust
+    - name: Primitive game
+      language: rust
       rust: 1.27.0
       cache: cargo
       before_install:
@@ -18,7 +20,8 @@ matrix:
         - cargo build --verbose --target=wasm32-unknown-unknown
         - cargo test --verbose --target=wasm32-unknown-unknown
 
-    - language: node_js
+    - name: Client
+      language: node_js
       node_js: 8
       cache:
         directories:
