@@ -9,7 +9,7 @@ matrix:
 
     - name: Primitive game
       language: rust
-      rust: 1.27.0
+      rust: 1.28.0
       cache: cargo
       before_install:
         - cd primitive-game
