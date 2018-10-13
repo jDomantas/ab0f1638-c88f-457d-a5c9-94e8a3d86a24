@@ -1,12 +1,38 @@
 matrix:
   include:
-    - language: rust
-      rust: 1.27.0
+    - name: Server
+      language: rust
+      rust: 1.29.0
       cache: cargo
       before_install:
         - cd server
 
-    - language: node_js
+    - name: Primitive game
+      language: rust
+      rust: 1.29.0
+      cache: cargo
+      before_install:
+        - cd primitive-game
+      install:
+        - rustup target add wasm32-unknown-unknown
+        - cargo build --verbose --target=wasm32-unknown-unknown
+      script:
+        - cargo build --verbose --target=wasm32-unknown-unknown
+        - cargo test --verbose
+
+    - name: Primitive game builder
+      language: rust
+      rust: 1.29.0
+      cache: cargo
+      before_install:
+        - cd primitive-game
+      install:
+        - cargo build --verbose --bin builder --features=binaries
+      script:
+        - cargo build --verbose --bin builder --features=binaries
+
+    - name: Client
+      language: node_js
       node_js: 8
       cache:
         directories:
