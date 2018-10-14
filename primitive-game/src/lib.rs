@@ -14,16 +14,13 @@ pub extern fn initial_world() -> Handle { DUMMY_HANDLE }
 pub extern fn update_world(world: Handle) -> Handle { DUMMY_HANDLE }
 
 #[no_mangle]
-pub extern fn update_player(world: Handle, player_id: Handle, input: Handle) -> Handle { DUMMY_HANDLE }
+pub extern fn update_player(world: Handle, player_id: u64, input: Handle) -> Handle { DUMMY_HANDLE }
 
 #[no_mangle]
-pub extern fn add_player(world: Handle, player_id: Handle) -> Handle { DUMMY_HANDLE }
+pub extern fn add_player(world: Handle, player_id: u64) -> Handle { DUMMY_HANDLE }
 
 #[no_mangle]
-pub extern fn remove_player(world: Handle, player_id: Handle) -> Handle { DUMMY_HANDLE }
-
-#[no_mangle]
-pub extern fn generate_player_id() -> Handle { DUMMY_HANDLE }
+pub extern fn remove_player(world: Handle, player_id: u64) -> Handle { DUMMY_HANDLE }
 
 #[no_mangle]
 pub extern fn allocate_buffer(size: i32) -> Handle { DUMMY_HANDLE }
