@@ -107,7 +107,7 @@ impl Game {
         if data.len() > i32::max_value() as usize {
             panic!("buffer too large to deserialize");
         }
-        let buffer_handle = self.module.allocate_buffer(data.len() as i32);
+        let buffer_handle = self.module.allocate_buffer(data.len() as u32);
         let ptr = self.module.buffer_ptr(&buffer_handle);
         self.module.write_memory(ptr, data);
         // FIXME: how to communicate deserialization failure?

@@ -8,7 +8,7 @@ use wasmi::{self, Error};
 
 #[derive(Debug)]
 pub struct Handle {
-    ptr: i32,
+    ptr: u32,
 }
 
 trait AsWasmValue {
@@ -17,13 +17,13 @@ trait AsWasmValue {
 
 impl AsWasmValue for Handle {
     fn as_wasm_value(&self) -> wasmi::RuntimeValue {
-        wasmi::RuntimeValue::I32(self.ptr)
+        wasmi::RuntimeValue::from(self.ptr)
     }
 }
 
-impl AsWasmValue for i32 {
+impl AsWasmValue for u32 {
     fn as_wasm_value(&self) -> wasmi::RuntimeValue {
-        wasmi::RuntimeValue::I32(*self)
+        wasmi::RuntimeValue::from(*self)
     }
 }
 
@@ -39,14 +39,14 @@ trait FromWasmValue: Sized {
 
 impl FromWasmValue for Handle {
     fn from_wasm_value(value: Option<wasmi::RuntimeValue>) -> Option<Self> {
-        i32::from_wasm_value(value).map(|ptr| Handle { ptr })
+        u32::from_wasm_value(value).map(|ptr| Handle { ptr })
     }
 }
 
-impl FromWasmValue for i32 {
+impl FromWasmValue for u32 {
     fn from_wasm_value(value: Option<wasmi::RuntimeValue>) -> Option<Self> {
         if let Some(wasmi::RuntimeValue::I32(value)) = value {
-            Some(value)
+            Some(value as u32)
         } else {
             None
         }
@@ -131,7 +131,7 @@ impl Module {
         call!(self.instance, generate_player_id() as Handle)
     }
 
-    pub fn allocate_buffer(&self, size: i32) -> Handle {
+    pub fn allocate_buffer(&self, size: u32) -> Handle {
         call!(self.instance, allocate_buffer(size) as Handle)
     }
 
@@ -139,12 +139,12 @@ impl Module {
         call!(self.instance, free_handle(handle) as ())
     }
 
-    pub fn buffer_ptr(&self, buffer: &Handle) -> i32 {
-        call!(self.instance, buffer_ptr(buffer) as i32)
+    pub fn buffer_ptr(&self, buffer: &Handle) -> u32 {
+        call!(self.instance, buffer_ptr(buffer) as u32)
     }
 
-    pub fn buffer_size(&self, buffer: &Handle) -> i32 {
-        call!(self.instance, buffer_size(buffer) as i32)
+    pub fn buffer_size(&self, buffer: &Handle) -> u32 {
+        call!(self.instance, buffer_size(buffer) as u32)
     }
 
     pub fn deserialize_world(&self, buffer: &Handle) -> Handle {
@@ -163,16 +163,16 @@ impl Module {
         call!(self.instance, serialize_input(input) as Handle)
     }
 
-    pub fn write_memory(&self, ptr: i32, data: &[u8]) {
-        let ptr = ptr as u32 as usize;
+    pub fn write_memory(&self, ptr: u32, data: &[u8]) {
+        let ptr = ptr as usize;
         self.memory.with_direct_access_mut(|memory| {
             memory[ptr..(ptr + data.len())].copy_from_slice(data);
         });
     }
 
-    pub fn read_memory(&self, ptr: i32, size: i32, into: &mut Vec<u8>) {
-        let from = ptr as u32 as usize;
-        let to = from + size as u32 as usize;
+    pub fn read_memory(&self, ptr: u32, size: u32, into: &mut Vec<u8>) {
+        let from = ptr as usize;
+        let to = from + size as usize;
         self.memory.with_direct_access(|memory| {
             into.extend_from_slice(&memory[from..to]);
         });
