@@ -108,9 +108,8 @@ impl Game {
             panic!("buffer too large to deserialize");
         }
         let buffer_handle = self.module.allocate_buffer(data.len() as i32);
-        let _ptr = self.module.buffer_ptr(&buffer_handle);
-        // FIXME: currently we don't have a way to access module's memory
-        // self.module.write_memory(ptr, data);
+        let ptr = self.module.buffer_ptr(&buffer_handle);
+        self.module.write_memory(ptr, data);
         // FIXME: how to communicate deserialization failure?
         let input = self.module.deserialize_input(&buffer_handle);
         self.module.free_handle(buffer_handle);
@@ -124,18 +123,16 @@ impl Game {
 
     pub fn serialize_world(&mut self, world: &World, into: &mut Vec<u8>) {
         let buffer_handle = self.module.serialize_world(&world.handle);
-        let _ptr = self.module.buffer_ptr(&buffer_handle);
-        let _size = self.module.buffer_size(&buffer_handle);
-        // FIXME: currently we don't have a way to access module's memory
-        // self.module.read_memory(ptr, size, into);
+        let ptr = self.module.buffer_ptr(&buffer_handle);
+        let size = self.module.buffer_size(&buffer_handle);
+        self.module.read_memory(ptr, size, into);
     }
 
     pub fn serialize_input(&mut self, input: &Input, into: &mut Vec<u8>) {
         let buffer_handle = self.module.serialize_input(&input.handle);
-        let _ptr = self.module.buffer_ptr(&buffer_handle);
-        let _size = self.module.buffer_size(&buffer_handle);
-        // FIXME: currently we don't have a way to access module's memory
-        // self.module.read_memory(ptr, size, into);
+        let ptr = self.module.buffer_ptr(&buffer_handle);
+        let size = self.module.buffer_size(&buffer_handle);
+        self.module.read_memory(ptr, size, into);
     }
 
     pub fn generate_player_id(&mut self) -> PlayerId {

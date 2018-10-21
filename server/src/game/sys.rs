@@ -66,10 +66,12 @@ impl FromWasmValue for () {
 pub struct Module {
     module: wasmi::Module,
     instance: wasmi::ModuleRef,
+    memory: wasmi::MemoryRef,
 }
 
 macro_rules! call {
     ($instance:expr, $name:ident ($($arg:expr),*) as $return_ty:ty) => {{
+        trace!(concat!("calling wasm: ", stringify!($name)));
         let wasm_value = $instance.invoke_export(
                 stringify!($name),
                 &[$($arg.as_wasm_value(),)*],
@@ -95,7 +97,14 @@ impl Module {
         let instance =
             wasmi::ModuleInstance::new(&module, &wasmi::ImportsBuilder::default())?
             .assert_no_start();
-        Ok(Module { module, instance })
+        let memory_export = instance.export_by_name("memory")
+            .expect("module does not export memory");
+        let memory = if let wasmi::ExternVal::Memory(memory) = memory_export {
+            memory
+        } else {
+            panic!("`memory` export is not memory");
+        };
+        Ok(Module { module, instance, memory })
     }
 
     pub fn initial_world(&self) -> Handle {
@@ -152,5 +161,24 @@ impl Module {
 
     pub fn serialize_input(&self, input: &Handle) -> Handle {
         call!(self.instance, serialize_input(input) as Handle)
+    }
+
+    pub fn write_memory(&self, ptr: i32, data: &[u8]) {
+        let ptr = ptr as u32 as usize;
+        self.memory.with_direct_access_mut(|memory| {
+            memory[ptr..(ptr + data.len())].copy_from_slice(data);
+        });
+    }
+
+    pub fn read_memory(&self, ptr: i32, size: i32, into: &mut Vec<u8>) {
+        let from = ptr as u32 as usize;
+        let to = from + size as u32 as usize;
+        self.memory.with_direct_access(|memory| {
+            into.extend_from_slice(&memory[from..to]);
+        });
+    }
+
+    pub fn with_memory<R, F: FnOnce(&mut [u8]) -> R>(&self, f: F) -> R {
+        self.memory.with_direct_access_mut(|memory| f(memory))
     }
 }
