@@ -172,7 +172,7 @@ impl Module {
         });
     }
 
-    pub fn with_memory<R, F: FnOnce(&mut [u8]) -> R>(&self, f: F) -> R {
+    fn with_memory<R, F: FnOnce(&mut [u8]) -> R>(&self, f: F) -> R {
         self.memory.with_direct_access_mut(|memory| f(memory))
     }
 }
