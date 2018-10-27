@@ -11,6 +11,7 @@ WebAssembly
 
         handler.onWorldState = worldState => {
             console.debug("Initial world state:", worldState);
+            // FIXME: hack, should replace with proper binary messages
             const rawWorld = new Uint8Array(JSON.parse(worldState.world));
             const playerId = new PlayerId(worldState.localPlayer);
             client = new Client(game, playerId, worldState.frame, rawWorld);

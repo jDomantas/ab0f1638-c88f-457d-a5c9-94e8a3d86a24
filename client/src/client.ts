@@ -48,6 +48,7 @@ export class Client {
 
     private updatePlayer(player: number, serializedInput: string) {
         const id = new PlayerId(player);
+        // FIXME: hack, should replace with proper binary messages
         const raw = new Uint8Array(JSON.parse(serializedInput));
         const input = this.game.deserializeInput(raw);
         const oldWorld = this.world;
