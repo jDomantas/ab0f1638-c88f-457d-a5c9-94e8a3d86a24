@@ -13,10 +13,12 @@ extern crate zip;
 mod game;
 mod network;
 mod package;
+mod resources;
 mod result_ext;
 mod server;
 
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use structopt::StructOpt;
 use package::Package;
 
@@ -32,9 +34,10 @@ fn main() {
     setup_logger();
     let package = load_package(&options.package);
     let mut game = create_game(&package);
+    let resources = Arc::new(resources::ServerResources::load(package));
     let world = game.initial_world();
 
-    let websocket_server = network::WebsocketServer::listen("127.0.0.1:8000");
+    let websocket_server = network::WebsocketServer::listen(resources, "127.0.0.1:8000");
     let mut server = server::Server::new(websocket_server, game, world);
 
     server.run();

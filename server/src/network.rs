@@ -1,15 +1,13 @@
 use result_ext::ResultExt;
 use std::collections::HashMap;
 use std::fmt::Debug;
-use std::fs;
-use std::io::{self, Read};
 use std::net::ToSocketAddrs;
-use std::path::Path;
 use std::str;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use ws;
+use resources::ServerResources;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Hash, Copy, Clone)]
 pub struct ConnectionId(u64);
@@ -50,7 +48,7 @@ pub struct WebsocketServer {
 }
 
 impl WebsocketServer {
-    pub fn listen<A>(addr: A) -> WebsocketServer
+    pub fn listen<A>(resources: Arc<ServerResources>, addr: A) -> WebsocketServer
     where
         A: ToSocketAddrs + Debug + Send + 'static,
     {
@@ -69,6 +67,7 @@ impl WebsocketServer {
                     // This connection might be a request for static files,
                     // so don't emit events or add it to connection list yet.
                     ConnectionHandler {
+                        resources: resources.clone(),
                         id,
                         sender: Some(ws_sender),
                         events: event_sender.clone(),
@@ -142,6 +141,7 @@ impl InnerServer {
 }
 
 struct ConnectionHandler {
+    resources: Arc<ServerResources>,
     id: ConnectionId,
     sender: Option<ws::Sender>,
     events: Sender<Event>,
@@ -150,23 +150,29 @@ struct ConnectionHandler {
 
 impl ws::Handler for ConnectionHandler {
     fn on_request(&mut self, req: &ws::Request) -> ws::Result<ws::Response> {
-        const INDEX_PATH: &str = "../client/target/index.html";
-        const JS_PATH: &str = "../client/target/bundle.js";
-        const SOURCE_MAP_PATH: &str = "../client/target/bundle.js.map";
-        const CSS_PATH: &str = "../client/target/style.css";
-
-        fn ok<P: AsRef<Path>>(path: P) -> io::Result<ws::Response> {
-            let mut file = fs::File::open(path)?;
-            let mut data = Vec::new();
-            file.read_to_end(&mut data)?;
-            Ok(ws::Response::new(200, "OK", data))
+        fn ok(contents: &[u8]) -> ws::Response {
+            ws::Response::new(200, "OK", contents.to_vec())
         }
 
-        match req.resource() {
-            "/" => Ok(ok(INDEX_PATH)?),
-            "/bundle.js" => Ok(ok(JS_PATH)?),
-            "/bundle.js.map" => Ok(ok(SOURCE_MAP_PATH)?),
-            "/style.css" => Ok(ok(CSS_PATH)?),
+        fn not_found() -> ws::Response {
+            ws::Response::new(
+                404,
+                "Not Found",
+                b"404 - Not Found".to_vec(),
+            )
+        }
+
+        Ok(match req.resource() {
+            "/" => ok(&self.resources.index),
+            "/bundle.js" => ok(&self.resources.js),
+            "/bundle.js.map" => {
+                if let Some(source_map) = &self.resources.source_map {
+                    ok(source_map)
+                } else {
+                    not_found()
+                }
+            }
+            "/style.css" => ok(&self.resources.css),
             "/ws" => {
                 self.events.send(Event::Connected { id: self.id }).unwrap();
                 let sender = self.sender
@@ -177,14 +183,11 @@ impl ws::Handler for ConnectionHandler {
                     .unwrap()
                     .connections
                     .insert(self.id, sender);
-                ws::Response::from_request(req)
+                ws::Response::from_request(req)?
             }
-            _ => Ok(ws::Response::new(
-                404,
-                "Not Found",
-                b"404 - Not Found".to_vec(),
-            )),
-        }
+            "/game/code.wasm" => ok(&self.resources.package.wasm_module),
+            _ => not_found(),
+        })
     }
 
     fn on_message(&mut self, msg: ws::Message) -> ws::Result<()> {
