@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 //! Low level bindings to wasm game module. API corresponds 1-to-1 with wasm
 //! module, except for ownership - handles are taken by reference where
 //! corresponding wasm functions don't take ownership of the passed handle.
@@ -58,7 +56,6 @@ impl FromWasmValue for () {
 }
 
 pub struct Module {
-    module: wasmi::Module,
     instance: wasmi::ModuleRef,
     memory: wasmi::MemoryRef,
 }
@@ -98,7 +95,7 @@ impl Module {
         } else {
             panic!("`memory` export is not memory");
         };
-        Ok(Module { module, instance, memory })
+        Ok(Module { instance, memory })
     }
 
     pub fn initial_world(&self) -> Handle {
@@ -121,10 +118,6 @@ impl Module {
         call!(self.instance, remove_player(world, player_id) as Handle)
     }
 
-    pub fn generate_player_id(&self) -> Handle {
-        call!(self.instance, generate_player_id() as Handle)
-    }
-
     pub fn allocate_buffer(&self, size: u32) -> Handle {
         call!(self.instance, allocate_buffer(size) as Handle)
     }
@@ -141,10 +134,6 @@ impl Module {
         call!(self.instance, buffer_size(buffer) as u32)
     }
 
-    pub fn deserialize_world(&self, buffer: &Handle) -> Handle {
-        call!(self.instance, deserialize_world(buffer) as Handle)
-    }
-
     pub fn serialize_world(&self, world: &Handle) -> Handle {
         call!(self.instance, serialize_world(world) as Handle)
     }
@@ -159,7 +148,7 @@ impl Module {
 
     pub fn write_memory(&self, ptr: u32, data: &[u8]) {
         let ptr = ptr as usize;
-        self.memory.with_direct_access_mut(|memory| {
+        self.with_memory(|memory| {
             memory[ptr..(ptr + data.len())].copy_from_slice(data);
         });
     }
@@ -167,7 +156,7 @@ impl Module {
     pub fn read_memory(&self, ptr: u32, size: u32, into: &mut Vec<u8>) {
         let from = ptr as usize;
         let to = from + size as usize;
-        self.memory.with_direct_access(|memory| {
+        self.with_memory(|memory| {
             into.extend_from_slice(&memory[from..to]);
         });
     }

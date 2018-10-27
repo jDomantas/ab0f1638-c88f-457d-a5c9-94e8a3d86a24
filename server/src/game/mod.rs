@@ -1,6 +1,3 @@
-// Allow unused function arguments.
-#![allow(unused_variables)]
-
 pub mod sys;
 
 use std::ops::Deref;
