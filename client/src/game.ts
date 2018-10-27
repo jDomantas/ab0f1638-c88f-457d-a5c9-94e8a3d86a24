@@ -8,19 +8,23 @@ export class Game {
     }
 
     public updatePlayer(world: World, player: PlayerId, input: Input): World {
-        return world;
+        const handle = this.game.updatePlayer(world.handle, player.id, input.handle);
+        return new World(this.game, handle);
     }
 
     public updateWorld(world: World): World {
-        return world;
+        const handle = this.game.updateWorld(world.handle);
+        return new World(this.game, handle);
     }
 
-    public addPlayer(id: PlayerId, world: World): World {
-        return world;
+    public addPlayer(player: PlayerId, world: World): World {
+        const handle = this.game.addPlayer(world.handle, player.id);
+        return new World(this.game, handle);
     }
 
-    public removePlayer(id: PlayerId, world: World): World {
-        return world;
+    public removePlayer(player: PlayerId, world: World): World {
+        const handle = this.game.removePlayer(world.handle, player.id);
+        return new World(this.game, handle);
     }
 
     public deserializeInput(raw: Uint8Array): Input {
