@@ -1,29 +1,33 @@
 import { Client } from "client";
-import { Game, World } from "game";
+import { Game, PlayerId } from "game";
 import { NetworkHandler } from "network";
 
-const handler = new NetworkHandler();
-const game = new Game();
-let client: Client;
+WebAssembly
+    .instantiateStreaming(fetch("/game/code.wasm"))
+    .then(wasm => {
+        const handler = new NetworkHandler();
+        const game = new Game(wasm.instance);
+        let client: Client;
 
-handler.onWorldState = worldState => {
-    console.debug("Initial world state:", worldState);
-    const buffer = game.allocateBuffer(0); // FIXME: should be size of received world
-    buffer.putData(worldState.world);
-    const playerId = game.createPlayerId(worldState.localPlayer);
-    client = new Client(game, playerId, worldState.frame, buffer);
-    sendInput(client.currentFrameNumber + 1);
-};
+        handler.onWorldState = worldState => {
+            console.debug("Initial world state:", worldState);
+            // FIXME: hack, should replace with proper binary messages
+            const rawWorld = new Uint8Array(JSON.parse(worldState.world));
+            const playerId = new PlayerId(worldState.localPlayer);
+            client = new Client(game, playerId, worldState.frame, rawWorld);
+            sendInput(client.currentFrameNumber + 1);
+        };
 
-handler.onPlayerInputs = inputs => {
-    client.step(inputs);
-    sendInput(inputs.frame + 1);
-};
+        handler.onPlayerInputs = inputs => {
+            client.step(inputs);
+            sendInput(inputs.frame + 1);
+        };
 
-function sendInput(frame: number) {
-    console.debug(`Sending input for frame ${frame}`);
-    handler.sendInput({
-        frame,
-        input: "foobar",
+        function sendInput(frame: number) {
+            console.debug(`Sending input for frame ${frame}`);
+            handler.sendInput({
+                frame,
+                input: "foobar",
+            });
+        }
     });
-}

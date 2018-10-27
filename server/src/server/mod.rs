@@ -178,19 +178,19 @@ impl Server {
             return;
         }
 
-        for player in &self.next_update_info.removed_players {
+        for &player in &self.next_update_info.removed_players {
             self.world = self.game.remove_player(player, &self.world);
         }
         self.world = self.game.update_world(&self.world);
 
         if let Some(set) = self.future_inputs.remove(&next_frame) {
-            for (player, input) in &set.inputs {
+            for (&player, input) in &set.inputs {
                 self.world = self.game.update_player(player, input, &self.world);
             }
             self.next_update_info.inputs = set;
         }
 
-        for player in &self.next_update_info.new_players {
+        for &player in &self.next_update_info.new_players {
             self.world = self.game.add_player(player, &self.world);
         }
 
@@ -250,19 +250,20 @@ impl Server {
         #[derive(Serialize)]
         struct Data<'a> {
             #[serde(rename = "localPlayer")]
-            local_player: u64,
+            local_player: u32,
             frame: u64,
             world: &'a str,
         }
-        let player_id = self.clients[&client].player_id().to_u64();
-        let world = self.game.serialize_world(&self.world);
-        let world_bytes = self.game.buffer_data(&world);
+        let player_id = self.clients[&client].player_id().to_u32();
+        let mut world_bytes = Vec::new();
+        self.game.serialize_world(&self.world, &mut world_bytes);
+        // FIXME: "temporary" hack: currently we are sending dummy values anyways.
+        // Eventually we will probably need to send binary messages instead of json.
+        let world_string = format!("{:?}", world_bytes);
         let data = Data {
             local_player: player_id,
             frame: self.frame,
-            // Temporary hack: currently we are sending dummy values anyways.
-            // Eventually we will probably need to send binary messages instead of json.
-            world: str::from_utf8(world_bytes).unwrap(),
+            world: &world_string,
         };
         serde_json::to_string(&data).expect("world state serialization failed")
     }
@@ -272,9 +273,9 @@ impl Server {
         struct Data {
             frame: u64,
             #[serde(rename = "newPlayers")]
-            new_players: Vec<u64>,
+            new_players: Vec<u32>,
             #[serde(rename = "removedPlayers")]
-            removed_players: Vec<u64>,
+            removed_players: Vec<u32>,
             inputs: HashMap<String, String>,
         }
         let game = &mut self.game;
@@ -283,24 +284,23 @@ impl Server {
             new_players: self.next_update_info
                 .new_players
                 .iter()
-                .map(PlayerId::to_u64)
+                .map(|id| id.to_u32())
                 .collect(),
             removed_players: self.next_update_info
                 .removed_players
                 .iter()
-                .map(PlayerId::to_u64)
+                .map(|id| id.to_u32())
                 .collect(),
             inputs: self.next_update_info
                 .inputs
                 .inputs
                 .iter()
                 .map(|(id, input)| {
-                    let input = game.serialize_input(input);
-                    let input_bytes = game.buffer_data(&input);
-                    // Same hack as with world state serialization: for now
-                    // pretending that bytes and strings are the same thing.
-                    let input_string = str::from_utf8(input_bytes).unwrap().to_string();
-                    (id.to_u64().to_string(), input_string)
+                    let mut input_bytes = Vec::new();
+                    game.serialize_input(input, &mut input_bytes);
+                    // FIXME: same hack as with world state serialization
+                    let input_string = format!("{:?}", input_bytes);
+                    (id.to_u32().to_string(), input_string)
                 })
                 .collect(),
         };
