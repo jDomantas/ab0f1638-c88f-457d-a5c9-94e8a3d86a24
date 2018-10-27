@@ -250,11 +250,11 @@ impl Server {
         #[derive(Serialize)]
         struct Data<'a> {
             #[serde(rename = "localPlayer")]
-            local_player: u64,
+            local_player: u32,
             frame: u64,
             world: &'a str,
         }
-        let player_id = self.clients[&client].player_id().to_u64();
+        let player_id = self.clients[&client].player_id().to_u32();
         let mut world_bytes = Vec::new();
         self.game.serialize_world(&self.world, &mut world_bytes);
         // FIXME: "temporary" hack: currently we are sending dummy values anyways.
@@ -273,9 +273,9 @@ impl Server {
         struct Data {
             frame: u64,
             #[serde(rename = "newPlayers")]
-            new_players: Vec<u64>,
+            new_players: Vec<u32>,
             #[serde(rename = "removedPlayers")]
-            removed_players: Vec<u64>,
+            removed_players: Vec<u32>,
             inputs: HashMap<String, String>,
         }
         let game = &mut self.game;
@@ -284,12 +284,12 @@ impl Server {
             new_players: self.next_update_info
                 .new_players
                 .iter()
-                .map(|id| id.to_u64())
+                .map(|id| id.to_u32())
                 .collect(),
             removed_players: self.next_update_info
                 .removed_players
                 .iter()
-                .map(|id| id.to_u64())
+                .map(|id| id.to_u32())
                 .collect(),
             inputs: self.next_update_info
                 .inputs
@@ -300,7 +300,7 @@ impl Server {
                     game.serialize_input(input, &mut input_bytes);
                     // FIXME: same hack as with world state serialization
                     let input_string = format!("{:?}", input_bytes);
-                    (id.to_u64().to_string(), input_string)
+                    (id.to_u32().to_string(), input_string)
                 })
                 .collect(),
         };

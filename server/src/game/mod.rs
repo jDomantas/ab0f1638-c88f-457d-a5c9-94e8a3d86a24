@@ -36,17 +36,17 @@ pub struct Input {
 
 #[derive(PartialEq, Eq, Ord, PartialOrd, Debug, Hash, Copy, Clone)]
 pub struct PlayerId {
-    id: u64,
+    id: u32,
 }
 
 impl PlayerId {
-    pub fn to_u64(self) -> u64 {
+    pub fn to_u32(self) -> u32 {
         self.id
     }
 }
 
 pub struct Game {
-    next_player_id: u64,
+    next_player_id: u32,
     module: Rc<Module>,
 }
 
@@ -79,7 +79,7 @@ impl Game {
     pub fn update_player(&mut self, player: PlayerId, input: &Input, world: &World) -> World {
         World {
             handle: AutoHandle {
-                raw: Some(self.module.update_player(&world.handle, player.to_u64(), &input.handle)),
+                raw: Some(self.module.update_player(&world.handle, player.to_u32(), &input.handle)),
                 module: self.module.clone(),
             },
         }
@@ -88,7 +88,7 @@ impl Game {
     pub fn remove_player(&mut self, player: PlayerId, world: &World) -> World {
         World {
             handle: AutoHandle {
-                raw: Some(self.module.remove_player(&world.handle, player.to_u64())),
+                raw: Some(self.module.remove_player(&world.handle, player.to_u32())),
                 module: self.module.clone(),
             },
         }
@@ -97,7 +97,7 @@ impl Game {
     pub fn add_player(&mut self, player: PlayerId, world: &World) -> World {
         World {
             handle: AutoHandle {
-                raw: Some(self.module.add_player(&world.handle, player.to_u64())),
+                raw: Some(self.module.add_player(&world.handle, player.to_u32())),
                 module: self.module.clone(),
             },
         }

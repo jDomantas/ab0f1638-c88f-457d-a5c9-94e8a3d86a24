@@ -27,12 +27,6 @@ impl AsWasmValue for u32 {
     }
 }
 
-impl AsWasmValue for u64 {
-    fn as_wasm_value(&self) -> wasmi::RuntimeValue {
-        wasmi::RuntimeValue::from(*self)
-    }
-}
-
 trait FromWasmValue: Sized {
     fn from_wasm_value(value: Option<wasmi::RuntimeValue>) -> Option<Self>;
 }
@@ -115,15 +109,15 @@ impl Module {
         call!(self.instance, update_world(world) as Handle)
     }
 
-    pub fn update_player(&self, world: &Handle, player_id: u64, input: &Handle) -> Handle {
+    pub fn update_player(&self, world: &Handle, player_id: u32, input: &Handle) -> Handle {
         call!(self.instance, update_player(world, player_id, input) as Handle)
     }
 
-    pub fn add_player(&self, world: &Handle, player_id: u64) -> Handle {
+    pub fn add_player(&self, world: &Handle, player_id: u32) -> Handle {
         call!(self.instance, add_player(world, player_id) as Handle)
     }
 
-    pub fn remove_player(&self, world: &Handle, player_id: u64) -> Handle {
+    pub fn remove_player(&self, world: &Handle, player_id: u32) -> Handle {
         call!(self.instance, remove_player(world, player_id) as Handle)
     }
 
