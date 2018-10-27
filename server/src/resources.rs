@@ -1,38 +1,35 @@
+use std::borrow::Cow;
+use std::fs;
 use package::Package;
 
 pub struct ServerResources {
-    pub index: Vec<u8>,
-    pub js: Vec<u8>,
-    pub source_map: Option<Vec<u8>>,
-    pub css: Vec<u8>,
     pub package: Package,
 }
 
 impl ServerResources {
     pub fn load(package: Package) -> ServerResources {
-        load_development_resources(package)
-            .expect("unable to read development resources")
+        ServerResources { package }
     }
 
-    // pub fn load() -> ServerResources {
-    //     ServerResources {
-    //         index: INDEX.to_vec(),
-    //         js: INDEX.to_vec(),
-    //         source_map: None,
-    //         css: CSS.to_vec(),
-    //     }
-    // }
-}
+    pub fn index(&self) -> Cow<[u8]> {
+        fs::read(INDEX_PATH).unwrap_or_else(|_| panic!("failed to read {}", INDEX_PATH)).into()
+    }
 
-fn load_development_resources(package: Package) -> ::std::io::Result<ServerResources> {
-    use std::fs;
-    Ok(ServerResources {
-        index: fs::read(INDEX_PATH)?,
-        js: fs::read(JS_PATH)?,
-        source_map: Some(fs::read(SOURCE_MAP_PATH)?),
-        css: fs::read(CSS_PATH)?,
-        package,
-    })
+    pub fn js(&self) -> Cow<[u8]> {
+        fs::read(JS_PATH).unwrap_or_else(|_| panic!("failed to read {}", JS_PATH)).into()
+    }
+
+    pub fn source_map(&self) -> Option<Cow<[u8]>> {
+        Some(fs::read(SOURCE_MAP_PATH).unwrap_or_else(|_| panic!("failed to read {}", SOURCE_MAP_PATH)).into())
+    }
+
+    pub fn css(&self) -> Cow<[u8]> {
+        fs::read(CSS_PATH).unwrap_or_else(|_| panic!("failed to read {}", CSS_PATH)).into()
+    }
+
+    pub fn package(&self) -> &Package {
+        &self.package
+    }
 }
 
 const INDEX_PATH: &str = "../client/target/index.html";

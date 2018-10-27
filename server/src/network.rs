@@ -163,16 +163,16 @@ impl ws::Handler for ConnectionHandler {
         }
 
         Ok(match req.resource() {
-            "/" => ok(&self.resources.index),
-            "/bundle.js" => ok(&self.resources.js),
+            "/" => ok(&self.resources.index()),
+            "/bundle.js" => ok(&self.resources.js()),
             "/bundle.js.map" => {
-                if let Some(source_map) = &self.resources.source_map {
-                    ok(source_map)
+                if let Some(source_map) = self.resources.source_map() {
+                    ok(&source_map)
                 } else {
                     not_found()
                 }
             }
-            "/style.css" => ok(&self.resources.css),
+            "/style.css" => ok(&self.resources.css()),
             "/ws" => {
                 self.events.send(Event::Connected { id: self.id }).unwrap();
                 let sender = self.sender
@@ -185,7 +185,7 @@ impl ws::Handler for ConnectionHandler {
                     .insert(self.id, sender);
                 ws::Response::from_request(req)?
             }
-            "/game/code.wasm" => ok(&self.resources.package.wasm_module),
+            "/game/code.wasm" => ok(&self.resources.package().wasm_module),
             _ => not_found(),
         })
     }
