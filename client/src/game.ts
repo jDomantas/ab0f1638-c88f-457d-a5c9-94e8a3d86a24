@@ -1,6 +1,10 @@
+import { LowLevelGame, WorldHandle, InputHandle, Handle } from "./lowLevelGame";
+
 export class Game {
-    public allocateBuffer(size: number): VmBuffer {
-        return new VmBuffer("");
+    private readonly game: LowLevelGame;
+
+    public constructor(wasmInstance: WebAssembly.Instance) {
+        this.game = new LowLevelGame(wasmInstance);
     }
 
     public updatePlayer(world: World, player: PlayerId, input: Input): World {
@@ -11,10 +15,6 @@ export class Game {
         return world;
     }
 
-    public createPlayerId(id: number): PlayerId {
-        return new PlayerId(id);
-    }
-
     public addPlayer(id: PlayerId, world: World): World {
         return world;
     }
@@ -23,61 +23,66 @@ export class Game {
         return world;
     }
 
-    public deserializeInput(buf: VmBuffer): Input {
-        return new Input(buf.getData());
+    public deserializeInput(raw: Uint8Array): Input {
+        let buffer = this.game.allocateBuffer(raw.length);
+        let ptr = this.game.bufferPtr(buffer);
+        this.game.writeMemory(ptr, raw);
+        let inputHandle = this.game.deserializeInput(buffer);
+        this.game.freeHandle(buffer);
+        return new Input(this.game, inputHandle);
     }
 
-    public deserializeWorld(buf: VmBuffer): World {
-        return new World();
+    public deserializeWorld(raw: Uint8Array): World {
+        let buffer = this.game.allocateBuffer(raw.length);
+        let ptr = this.game.bufferPtr(buffer);
+        this.game.writeMemory(ptr, raw);
+        let worldHandle = this.game.deserializeWorld(buffer);
+        this.game.freeHandle(buffer);
+        return new World(this.game, worldHandle);
     }
 
-    public serializeInput(input: Input): VmBuffer {
-        return new VmBuffer(input.data);
+    public serializeInput(input: Input): Uint8Array {
+        let buffer = this.game.serializeInput(input.handle);
+        let ptr = this.game.bufferPtr(buffer);
+        let size = this.game.bufferSize(buffer);
+        let raw = this.game.readMemory(ptr, size);
+        this.game.freeHandle(buffer);
+        return raw;
     }
 }
 
 export class Input {
-    public data: string;
+    public readonly game: LowLevelGame;
+    public readonly handle: InputHandle;
 
-    constructor(data: string) {
-        this.data = data;
+    constructor(game: LowLevelGame, handle: InputHandle) {
+        this.game = game;
+        this.handle = handle;
     }
 
-    public free() {}
+    public free() {
+        this.game.freeHandle(this.handle);
+    }
 }
 
 export class PlayerId {
-    private id: number;
+    public readonly id: number;
 
-    constructor(id: number) {
+    public constructor(id: number) {
         this.id = id;
-    }
-
-    public free() {}
-
-    public toNumber(): number {
-        return this.id;
-    }
-}
-
-export class VmBuffer {
-    private data: string;
-
-    constructor(data: string) {
-        this.data = data;
-    }
-
-    public free() {}
-
-    public putData(data: string) {
-        this.data = data;
-    }
-
-    public getData(): string {
-        return this.data;
     }
 }
 
 export class World {
-    public free() {}
+    public readonly game: LowLevelGame;
+    public readonly handle: WorldHandle;
+
+    constructor(game: LowLevelGame, handle: WorldHandle) {
+        this.game = game;
+        this.handle = handle;
+    }
+
+    public free() {
+        this.game.freeHandle(this.handle);
+    }
 }

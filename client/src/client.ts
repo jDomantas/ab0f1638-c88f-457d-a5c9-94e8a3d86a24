@@ -1,4 +1,4 @@
-import { Game, PlayerId, VmBuffer, World } from "game";
+import { Game, PlayerId, World } from "game";
 import { PlayerInputMessage } from "network";
 
 export class Client {
@@ -7,12 +7,11 @@ export class Client {
     private currentFrame: number;
     private localPlayer: PlayerId;
 
-    public constructor(game: Game, localPlayer: PlayerId, currentFrame: number, worldBuf: VmBuffer) {
+    public constructor(game: Game, localPlayer: PlayerId, currentFrame: number, worldBuf: Uint8Array) {
         this.game = game;
         this.localPlayer = localPlayer;
         this.currentFrame = currentFrame;
         this.world = this.game.deserializeWorld(worldBuf);
-        worldBuf.free();
     }
 
     public get currentFrameNumber(): number {
@@ -34,32 +33,27 @@ export class Client {
     }
 
     private addPlayer(player: number) {
-        const id = this.game.createPlayerId(player);
+        const id = new PlayerId(player);
         const oldWorld = this.world;
         this.world = this.game.addPlayer(id, oldWorld);
         oldWorld.free();
-        id.free();
     }
 
     private removePlayer(player: number) {
-        const id = this.game.createPlayerId(player);
+        const id = new PlayerId(player);
         const oldWorld = this.world;
         this.world = this.game.removePlayer(id, oldWorld);
         oldWorld.free();
-        id.free();
     }
 
     private updatePlayer(player: number, serializedInput: string) {
-        const id = this.game.createPlayerId(player);
-        const inputBuffer = this.game.allocateBuffer(0); // FIXME: should be size of received input
-        inputBuffer.putData(serializedInput);
-        const input = this.game.deserializeInput(inputBuffer);
-        inputBuffer.free();
+        const id = new PlayerId(player);
+        const raw = new Uint8Array(JSON.parse(serializedInput));
+        const input = this.game.deserializeInput(raw);
         const oldWorld = this.world;
         this.world = this.game.updatePlayer(oldWorld, id, input);
         oldWorld.free();
         input.free();
-        id.free();
     }
 
     private updateWorld() {
