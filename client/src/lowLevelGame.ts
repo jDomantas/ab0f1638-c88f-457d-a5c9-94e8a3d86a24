@@ -1,6 +1,6 @@
 export class Handle<Kind extends string> {
-    kind: Kind;
-    readonly value: number;
+    public kind: Kind;
+    public readonly value: number;
 
     constructor(value: number, kind: Kind) {
         this.kind = kind;
@@ -20,32 +20,32 @@ export class LowLevelGame {
     }
 
     public initialWorld(): WorldHandle {
-        let value = this.instance.exports.initial_world();
+        const value = this.instance.exports.initial_world();
         return new Handle(value, "world");
     }
 
     public updateWorld(world: WorldHandle): WorldHandle {
-        let value = this.instance.exports.update_world(world.value);
+        const value = this.instance.exports.update_world(world.value);
         return new Handle(value, "world");
     }
 
     public updatePlayer(world: WorldHandle, playerId: number, input: InputHandle): WorldHandle {
-        let value = this.instance.exports.update_player(world.value, playerId, input.value);
+        const value = this.instance.exports.update_player(world.value, playerId, input.value);
         return new Handle(value, "world");
     }
 
     public addPlayer(world: WorldHandle, playerId: number): WorldHandle {
-        let value = this.instance.exports.add_player(world.value, playerId);
+        const value = this.instance.exports.add_player(world.value, playerId);
         return new Handle(value, "world");
     }
 
     public removePlayer(world: WorldHandle, playerId: number): WorldHandle {
-        let value = this.instance.exports.remove_player(world.value, playerId);
+        const value = this.instance.exports.remove_player(world.value, playerId);
         return new Handle(value, "world");
     }
 
     public allocateBuffer(size: number): BufferHandle {
-        let value = this.instance.exports.allocate_buffer(size);
+        const value = this.instance.exports.allocate_buffer(size);
         return new Handle(value, "buffer");
     }
 
@@ -62,17 +62,17 @@ export class LowLevelGame {
     }
 
     public deserializeWorld(buffer: BufferHandle): WorldHandle {
-        let value = this.instance.exports.deserialize_world(buffer.value);
+        const value = this.instance.exports.deserialize_world(buffer.value);
         return new Handle(value, "world");
     }
 
     public deserializeInput(buffer: BufferHandle): InputHandle {
-        let value = this.instance.exports.deserialize_input(buffer.value);
+        const value = this.instance.exports.deserialize_input(buffer.value);
         return new Handle(value, "input");
     }
 
     public serializeInput(input: InputHandle): BufferHandle {
-        let value = this.instance.exports.serialize_input(input.value);
+        const value = this.instance.exports.serialize_input(input.value);
         return new Handle(value, "buffer");
     }
 
@@ -85,7 +85,7 @@ export class LowLevelGame {
     }
 
     private memory(): Uint8Array {
-        let memory = this.instance.exports.memory as WebAssembly.Memory;
+        const memory = this.instance.exports.memory as WebAssembly.Memory;
         return new Uint8Array(memory.buffer);
     }
 }

@@ -1,4 +1,4 @@
-import { LowLevelGame, WorldHandle, InputHandle, Handle } from "./lowLevelGame";
+import { Handle, InputHandle, LowLevelGame, WorldHandle } from "./lowLevelGame";
 
 export class Game {
     private readonly game: LowLevelGame;
@@ -24,28 +24,28 @@ export class Game {
     }
 
     public deserializeInput(raw: Uint8Array): Input {
-        let buffer = this.game.allocateBuffer(raw.length);
-        let ptr = this.game.bufferPtr(buffer);
+        const buffer = this.game.allocateBuffer(raw.length);
+        const ptr = this.game.bufferPtr(buffer);
         this.game.writeMemory(ptr, raw);
-        let inputHandle = this.game.deserializeInput(buffer);
+        const inputHandle = this.game.deserializeInput(buffer);
         this.game.freeHandle(buffer);
         return new Input(this.game, inputHandle);
     }
 
     public deserializeWorld(raw: Uint8Array): World {
-        let buffer = this.game.allocateBuffer(raw.length);
-        let ptr = this.game.bufferPtr(buffer);
+        const buffer = this.game.allocateBuffer(raw.length);
+        const ptr = this.game.bufferPtr(buffer);
         this.game.writeMemory(ptr, raw);
-        let worldHandle = this.game.deserializeWorld(buffer);
+        const worldHandle = this.game.deserializeWorld(buffer);
         this.game.freeHandle(buffer);
         return new World(this.game, worldHandle);
     }
 
     public serializeInput(input: Input): Uint8Array {
-        let buffer = this.game.serializeInput(input.handle);
-        let ptr = this.game.bufferPtr(buffer);
-        let size = this.game.bufferSize(buffer);
-        let raw = this.game.readMemory(ptr, size);
+        const buffer = this.game.serializeInput(input.handle);
+        const ptr = this.game.bufferPtr(buffer);
+        const size = this.game.bufferSize(buffer);
+        const raw = this.game.readMemory(ptr, size);
         this.game.freeHandle(buffer);
         return raw;
     }
