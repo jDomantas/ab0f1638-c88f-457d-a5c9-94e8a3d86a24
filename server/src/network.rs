@@ -150,8 +150,10 @@ struct ConnectionHandler {
 
 impl ws::Handler for ConnectionHandler {
     fn on_request(&mut self, req: &ws::Request) -> ws::Result<ws::Response> {
-        fn ok(contents: &[u8]) -> ws::Response {
-            ws::Response::new(200, "OK", contents.to_vec())
+        fn ok(contents: &[u8], content_type: &[u8]) -> ws::Response {
+            let mut response = ws::Response::new(200, "OK", contents.to_vec());
+            response.headers_mut().push(("Content-Type".to_string(), content_type.to_vec()));
+            response
         }
 
         fn not_found() -> ws::Response {
@@ -163,16 +165,16 @@ impl ws::Handler for ConnectionHandler {
         }
 
         Ok(match req.resource() {
-            "/" => ok(&self.resources.index()),
-            "/bundle.js" => ok(&self.resources.js()),
+            "/" => ok(&self.resources.index(), b"text/html"),
+            "/bundle.js" => ok(&self.resources.js(), b"application/javascript"),
             "/bundle.js.map" => {
                 if let Some(source_map) = self.resources.source_map() {
-                    ok(&source_map)
+                    ok(&source_map, b"application/octet-stream")
                 } else {
                     not_found()
                 }
             }
-            "/style.css" => ok(&self.resources.css()),
+            "/style.css" => ok(&self.resources.css(), b"text/css"),
             "/ws" => {
                 self.events.send(Event::Connected { id: self.id }).unwrap();
                 let sender = self.sender
@@ -185,7 +187,7 @@ impl ws::Handler for ConnectionHandler {
                     .insert(self.id, sender);
                 ws::Response::from_request(req)?
             }
-            "/game/code.wasm" => ok(&self.resources.package().wasm_module),
+            "/game/code.wasm" => ok(&self.resources.package().wasm_module, b"application/wasm"),
             _ => not_found(),
         })
     }
