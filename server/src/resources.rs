@@ -32,10 +32,10 @@ impl ServerResources {
     }
 }
 
-const INDEX_PATH: &str = "../client/target/index.html";
-const JS_PATH: &str = "../client/target/bundle.js";
-const SOURCE_MAP_PATH: &str = "../client/target/bundle.js.map";
-const CSS_PATH: &str = "../client/target/style.css";
+const INDEX_PATH: &str = "./client/target/index.html";
+const JS_PATH: &str = "./client/target/bundle.js";
+const SOURCE_MAP_PATH: &str = "./client/target/bundle.js.map";
+const CSS_PATH: &str = "./client/target/style.css";
 
 // resources are going to be embedded into the binary in builds meant for distribution
 // const INDEX: &[u8] = include_bytes!("../../client/target/index.html");
