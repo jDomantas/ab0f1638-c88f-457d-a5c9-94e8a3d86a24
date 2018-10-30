@@ -8,6 +8,8 @@ use std::process::Command;
 fn main() {
     assert!(Command::new("cargo")
         .arg("build")
+        .arg("-p")
+        .arg("primitive-game")
         .arg("--release")
         .arg("--target=wasm32-unknown-unknown")
         .status()

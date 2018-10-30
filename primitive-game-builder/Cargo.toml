@@ -1,0 +1,8 @@
+[package]
+name = "primitive-game-builder"
+version = "0.1.0"
+authors = ["djade <djadenkus@gmail.com>"]
+
+[dependencies]
+zip = "0.4.2"
+wasm-gc-api = "0.1.11"

@@ -10,6 +10,9 @@
             "path": "primitive-game"
         },
         {
+            "path": "primitive-game-builder"
+        },
+        {
             "path": ".",
             "name": "root"
         }
@@ -19,6 +22,7 @@
             "client": true,
             "server": true,
             "primitive-game": true,
+            "primitive-game-builder": true,
             ".vscode": true
         }
     }
