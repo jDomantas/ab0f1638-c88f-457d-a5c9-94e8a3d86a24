@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "server",
+    "primitive-game",
+    "primitive-game-builder",
+]
