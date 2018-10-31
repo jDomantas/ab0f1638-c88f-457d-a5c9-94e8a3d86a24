@@ -1,4 +1,4 @@
-use game::PlayerId;
+use crate::game::PlayerId;
 
 pub struct Client {
     player: PlayerId,

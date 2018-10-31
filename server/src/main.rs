@@ -6,7 +6,6 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-#[macro_use]
 extern crate structopt;
 extern crate wasmi;
 extern crate zip;
@@ -21,7 +20,7 @@ mod server;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use structopt::StructOpt;
-use package::Package;
+use crate::package::Package;
 
 #[derive(StructOpt, Debug)]
 struct Opt {

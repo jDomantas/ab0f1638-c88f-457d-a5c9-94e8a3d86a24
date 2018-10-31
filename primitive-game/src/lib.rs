@@ -3,9 +3,9 @@ mod game_instance;
 mod squares;
 
 use std::sync::{Mutex, MutexGuard};
-use game_instance::GameInstance;
+use crate::game_instance::GameInstance;
 
-type GameImpl = squares::Squares;
+type GameImpl = crate::squares::Squares;
 static mut GAME: Option<Mutex<GameInstance<GameImpl>>> = None;
 
 fn get_game() -> MutexGuard<'static, GameInstance<GameImpl>> {

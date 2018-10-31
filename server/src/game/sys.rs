@@ -2,7 +2,7 @@
 //! module, except for ownership - handles are taken by reference where
 //! corresponding wasm functions don't take ownership of the passed handle.
 
-use wasmi::{self, Error, ValueType};
+use wasmi::{Error, ValueType};
 
 #[derive(Debug)]
 pub struct Handle {
@@ -149,8 +149,8 @@ struct Externals(wasmi::MemoryRef);
 #[derive(Debug, Copy, Clone)]
 struct RuntimeError(&'static str);
 
-impl ::std::fmt::Display for RuntimeError {
-    fn fmt(&self, f: &mut ::std::fmt::Formatter) -> ::std::fmt::Result {
+impl std::fmt::Display for RuntimeError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "RuntimeError({})", self.0)
     }
 }
