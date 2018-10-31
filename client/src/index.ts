@@ -3,13 +3,9 @@ import { Game, PlayerId } from "game";
 import { NetworkHandler } from "network";
 
 const imports = {
-    "env": {
-        "log_str": (ptr: number, len: number) => {
-            // console.log("log message from wasm")
-        },
-        "draw_rectangle": (x: number, y: number, width: number, height: number, color: number) => {
-            console.log("wasm rendered");
-        }
+    env: {
+        draw_rectangle: (x: number, y: number, width: number, height: number, color: number) => {},
+        log_str: (ptr: number, len: number) => {},
     },
 };
 
