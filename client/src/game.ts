@@ -58,6 +58,10 @@ export class Game {
         const handle = this.game.createInput(letters, oldLetters, other, oldOther);
         return new Input(this.game, handle);
     }
+
+    public render(world: World, localPlayer: PlayerId, width: number, height: number) {
+        this.game.render(world.handle, localPlayer.id, width, height);
+    }
 }
 
 export class Input {

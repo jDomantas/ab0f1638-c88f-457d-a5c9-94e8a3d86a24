@@ -90,6 +90,10 @@ export class LowLevelGame {
         return new Handle(value, "input");
     }
 
+    public render(world: WorldHandle, localPlayer: number, width: number, height: number) {
+        this.instance.exports.render(world.value, localPlayer, width, height);
+    }
+
     private memory(): Uint8Array {
         const memory = this.instance.exports.memory as WebAssembly.Memory;
         return new Uint8Array(memory.buffer);

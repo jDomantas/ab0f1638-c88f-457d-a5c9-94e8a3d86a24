@@ -62,4 +62,16 @@ export class Client {
         this.world = this.game.updateWorld(oldWorld);
         oldWorld.free();
     }
+
+    public runGameLoop() {
+        const renderLoop = () => {
+            window.requestAnimationFrame(renderLoop);
+            this.render();
+        }
+        window.requestAnimationFrame(renderLoop);
+    }
+
+    private render() {
+        this.game.render(this.world, this.localPlayer, 640, 480);
+    }
 }
