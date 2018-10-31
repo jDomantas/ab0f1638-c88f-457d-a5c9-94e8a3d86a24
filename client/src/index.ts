@@ -5,7 +5,6 @@ import { NetworkHandler } from "network";
 const canvas = document.getElementById("game-canvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
 
-
 function showColor(color: number): string {
     function showHex(n: number): string {
         n = n & 0xFF;
@@ -68,51 +67,51 @@ WebAssembly
     });
 
 function keyIndex(key: string): number {
-    if (key == "a") return 0;
-    if (key == "b") return 1;
-    if (key == "c") return 2;
-    if (key == "d") return 3;
-    if (key == "e") return 4;
-    if (key == "f") return 5;
-    if (key == "g") return 6;
-    if (key == "h") return 7;
-    if (key == "i") return 8;
-    if (key == "j") return 9;
-    if (key == "k") return 10;
-    if (key == "l") return 11;
-    if (key == "m") return 12;
-    if (key == "n") return 13;
-    if (key == "o") return 14;
-    if (key == "p") return 15;
-    if (key == "q") return 16;
-    if (key == "r") return 17;
-    if (key == "s") return 18;
-    if (key == "t") return 19;
-    if (key == "u") return 20;
-    if (key == "v") return 21;
-    if (key == "w") return 22;
-    if (key == "x") return 23;
-    if (key == "y") return 24;
-    if (key == "z") return 25;
-    if (key == "ArrowUp") return 32;
-    if (key == "ArrowDown") return 33;
-    if (key == "ArrowLeft") return 34;
-    if (key == "ArrowRight") return 35;
-    if (key == "0") return 36;
-    if (key == "1") return 37;
-    if (key == "2") return 38;
-    if (key == "3") return 39;
-    if (key == "4") return 40;
-    if (key == "5") return 41;
-    if (key == "6") return 42;
-    if (key == "7") return 43;
-    if (key == "8") return 44;
-    if (key == "9") return 45;
+    if (key === "a") { return 0; }
+    if (key === "b") { return 1; }
+    if (key === "c") { return 2; }
+    if (key === "d") { return 3; }
+    if (key === "e") { return 4; }
+    if (key === "f") { return 5; }
+    if (key === "g") { return 6; }
+    if (key === "h") { return 7; }
+    if (key === "i") { return 8; }
+    if (key === "j") { return 9; }
+    if (key === "k") { return 10; }
+    if (key === "l") { return 11; }
+    if (key === "m") { return 12; }
+    if (key === "n") { return 13; }
+    if (key === "o") { return 14; }
+    if (key === "p") { return 15; }
+    if (key === "q") { return 16; }
+    if (key === "r") { return 17; }
+    if (key === "s") { return 18; }
+    if (key === "t") { return 19; }
+    if (key === "u") { return 20; }
+    if (key === "v") { return 21; }
+    if (key === "w") { return 22; }
+    if (key === "x") { return 23; }
+    if (key === "y") { return 24; }
+    if (key === "z") { return 25; }
+    if (key === "ArrowUp") { return 32; }
+    if (key === "ArrowDown") { return 33; }
+    if (key === "ArrowLeft") { return 34; }
+    if (key === "ArrowRight") { return 35; }
+    if (key === "0") { return 36; }
+    if (key === "1") { return 37; }
+    if (key === "2") { return 38; }
+    if (key === "3") { return 39; }
+    if (key === "4") { return 40; }
+    if (key === "5") { return 41; }
+    if (key === "6") { return 42; }
+    if (key === "7") { return 43; }
+    if (key === "8") { return 44; }
+    if (key === "9") { return 45; }
     return -1;
 }
 
 document.onkeydown = (ev) => {
-    if([32, 37, 38, 39, 40].indexOf(ev.keyCode) > -1) {
+    if ([32, 37, 38, 39, 40].indexOf(ev.keyCode) > -1) {
         ev.preventDefault();
     }
     const index = keyIndex(ev.key);

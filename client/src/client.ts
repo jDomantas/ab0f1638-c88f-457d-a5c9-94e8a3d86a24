@@ -32,6 +32,14 @@ export class Client {
         this.currentFrame = inputs.frame;
     }
 
+    public runGameLoop() {
+        const renderLoop = () => {
+            window.requestAnimationFrame(renderLoop);
+            this.render();
+        };
+        window.requestAnimationFrame(renderLoop);
+    }
+
     private addPlayer(player: number) {
         const id = new PlayerId(player);
         const oldWorld = this.world;
@@ -61,14 +69,6 @@ export class Client {
         const oldWorld = this.world;
         this.world = this.game.updateWorld(oldWorld);
         oldWorld.free();
-    }
-
-    public runGameLoop() {
-        const renderLoop = () => {
-            window.requestAnimationFrame(renderLoop);
-            this.render();
-        }
-        window.requestAnimationFrame(renderLoop);
     }
 
     private render() {
