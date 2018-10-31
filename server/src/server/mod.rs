@@ -62,7 +62,7 @@ impl Server {
 
     pub fn run(&mut self) {
         let mut last_frame_time = Instant::now();
-        let frames_per_second = 60;
+        let frames_per_second = 2;
         let frame_time = Duration::from_nanos(1_000_000_000 / frames_per_second);
 
         loop {
@@ -142,7 +142,7 @@ impl Server {
             unreachable!("received old input");
         }
 
-        let input = match self.game.deserialize_input(message.input.as_bytes()) {
+        let input = match self.game.deserialize_input(&message.input) {
             Some(input) => input,
             None => {
                 trace!(
@@ -311,7 +311,7 @@ impl Server {
 #[derive(Deserialize)]
 struct InputMessage {
     frame: u64,
-    input: String,
+    input: Vec<u8>,
 }
 
 fn deserialize_message(binary: &[u8]) -> Option<InputMessage> {

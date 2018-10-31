@@ -17,6 +17,7 @@ export class LowLevelGame {
 
     public constructor(instance: WebAssembly.Instance) {
         this.instance = instance;
+        this.instance.exports.initialize();
     }
 
     public initialWorld(): WorldHandle {
@@ -82,6 +83,11 @@ export class LowLevelGame {
 
     public writeMemory(ptr: number, data: Uint8Array) {
         this.memory().set(data, ptr);
+    }
+
+    public createInput(letters: number, oldLetters: number, other: number, oldOther: number): InputHandle {
+        const value = this.instance.exports.create_input(letters, oldLetters, other, oldOther);
+        return new Handle(value, "input");
     }
 
     private memory(): Uint8Array {

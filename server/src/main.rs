@@ -82,8 +82,9 @@ fn load_package<P: AsRef<Path>>(path: P) -> Package {
 fn create_game(package: &Package) -> game::Game {
     match game::sys::Module::from_buffer(&package.wasm_module) {
         Ok(module) => game::Game::new(module),
-        Err(_) => {
+        Err(e) => {
             eprintln!("Failed to load game code");
+            eprintln!("{:?}", e);
             std::process::exit(1);
         }
     }

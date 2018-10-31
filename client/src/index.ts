@@ -2,8 +2,19 @@ import { Client } from "client";
 import { Game, PlayerId } from "game";
 import { NetworkHandler } from "network";
 
+const imports = {
+    "env": {
+        "log_str": (ptr: number, len: number) => {
+            // console.log("log message from wasm")
+        },
+        "draw_rectangle": (x: number, y: number, width: number, height: number, color: number) => {
+            console.log("wasm rendered");
+        }
+    },
+};
+
 WebAssembly
-    .instantiateStreaming(fetch("/game/code.wasm"))
+    .instantiateStreaming(fetch("/game/code.wasm"), imports)
     .then(wasm => {
         const handler = new NetworkHandler();
         const game = new Game(wasm.instance);
@@ -25,9 +36,12 @@ WebAssembly
 
         function sendInput(frame: number) {
             console.debug(`Sending input for frame ${frame}`);
+            const input = game.createInput(0, 0, 0, 0);
+            const serialized = game.serializeInput(input);
+            input.free();
             handler.sendInput({
                 frame,
-                input: "foobar",
+                input: Array.prototype.slice.call(serialized),
             });
         }
     });
