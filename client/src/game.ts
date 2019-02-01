@@ -1,4 +1,4 @@
-import { Handle, InputHandle, LowLevelGame, WorldHandle } from "./lowLevelGame";
+import { Handle, InputHandle, LowLevelGame, WorldHandle } from "lowLevelGame";
 
 export class Game {
     private readonly game: LowLevelGame;
@@ -52,6 +52,15 @@ export class Game {
         const raw = this.game.readMemory(ptr, size);
         this.game.freeHandle(buffer);
         return raw;
+    }
+
+    public createInput(letters: number, oldLetters: number, other: number, oldOther: number): Input {
+        const handle = this.game.createInput(letters, oldLetters, other, oldOther);
+        return new Input(this.game, handle);
+    }
+
+    public render(world: World, localPlayer: PlayerId, width: number, height: number) {
+        this.game.render(world.handle, localPlayer.id, width, height);
     }
 }
 

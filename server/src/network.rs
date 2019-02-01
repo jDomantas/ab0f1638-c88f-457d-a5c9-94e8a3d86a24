@@ -6,8 +6,7 @@ use std::str;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::{Arc, Mutex};
 use std::thread;
-use ws;
-use resources::ServerResources;
+use crate::resources::ServerResources;
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Debug, Hash, Copy, Clone)]
 pub struct ConnectionId(u64);

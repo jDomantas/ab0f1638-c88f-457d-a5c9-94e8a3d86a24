@@ -2,7 +2,7 @@ use std::convert::From;
 use std::fs;
 use std::io::{self, prelude::*};
 use std::path::Path;
-use zip::{self, result::ZipError};
+use zip::result::ZipError;
 
 #[derive(Debug, Clone)]
 pub struct Package {

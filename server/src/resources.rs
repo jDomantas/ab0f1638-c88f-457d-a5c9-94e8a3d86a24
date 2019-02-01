@@ -1,6 +1,6 @@
 use std::borrow::Cow;
 use std::fs;
-use package::Package;
+use crate::package::Package;
 
 pub struct ServerResources {
     pub package: Package,

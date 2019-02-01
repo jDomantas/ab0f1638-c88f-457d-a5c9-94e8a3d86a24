@@ -6,7 +6,6 @@ extern crate serde;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
-#[macro_use]
 extern crate structopt;
 extern crate wasmi;
 extern crate zip;
@@ -21,7 +20,7 @@ mod server;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use structopt::StructOpt;
-use package::Package;
+use crate::package::Package;
 
 #[derive(StructOpt, Debug)]
 struct Opt {
@@ -82,8 +81,9 @@ fn load_package<P: AsRef<Path>>(path: P) -> Package {
 fn create_game(package: &Package) -> game::Game {
     match game::sys::Module::from_buffer(&package.wasm_module) {
         Ok(module) => game::Game::new(module),
-        Err(_) => {
+        Err(e) => {
             eprintln!("Failed to load game code");
+            eprintln!("{:?}", e);
             std::process::exit(1);
         }
     }

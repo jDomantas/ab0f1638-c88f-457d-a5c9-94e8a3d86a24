@@ -32,6 +32,14 @@ export class Client {
         this.currentFrame = inputs.frame;
     }
 
+    public runGameLoop() {
+        const renderLoop = () => {
+            window.requestAnimationFrame(renderLoop);
+            this.render();
+        };
+        window.requestAnimationFrame(renderLoop);
+    }
+
     private addPlayer(player: number) {
         const id = new PlayerId(player);
         const oldWorld = this.world;
@@ -46,11 +54,9 @@ export class Client {
         oldWorld.free();
     }
 
-    private updatePlayer(player: number, serializedInput: string) {
+    private updatePlayer(player: number, serializedInput: Uint8Array) {
         const id = new PlayerId(player);
-        // FIXME: hack, should replace with proper binary messages
-        const raw = new Uint8Array(JSON.parse(serializedInput));
-        const input = this.game.deserializeInput(raw);
+        const input = this.game.deserializeInput(serializedInput);
         const oldWorld = this.world;
         this.world = this.game.updatePlayer(oldWorld, id, input);
         oldWorld.free();
@@ -61,5 +67,9 @@ export class Client {
         const oldWorld = this.world;
         this.world = this.game.updateWorld(oldWorld);
         oldWorld.free();
+    }
+
+    private render() {
+        this.game.render(this.world, this.localPlayer, 640, 480);
     }
 }

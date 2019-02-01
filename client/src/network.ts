@@ -5,11 +5,11 @@ type ServerMessage = WorldStateMessage | PlayerInputMessage;
 export interface WorldStateMessage {
     localPlayer: number;
     frame: number;
-    world: string;
+    world: Uint8Array;
 }
 
 export interface PlayerInputs {
-    [id: string]: string;
+    [id: string]: Uint8Array;
 }
 
 export interface PlayerInputMessage {
@@ -21,7 +21,7 @@ export interface PlayerInputMessage {
 
 export interface LocalPlayerInput {
     frame: number;
-    input: string;
+    input: Uint8Array;
 }
 
 export class NetworkHandler {
@@ -44,7 +44,10 @@ export class NetworkHandler {
     }
 
     public sendInput(input: LocalPlayerInput) {
-        this.client.send(JSON.stringify(input));
+        this.client.send(JSON.stringify({
+            frame: input.frame,
+            input: [].slice.call(input.input),
+        }));
     }
 
     private error(err: Error) {
@@ -61,7 +64,7 @@ export class NetworkHandler {
 
     private onMessage(message: any) {
         console.debug("Received message:", message);
-        const payload = parseMessagePayload(message);
+        const payload = parseMessagePayload(message.data);
         if (isWorldState(payload)) {
             this.receivedWorldState = true;
             this.onWorldState(payload);
@@ -78,10 +81,28 @@ export class NetworkHandler {
 }
 
 function parseMessagePayload(message: any): ServerMessage {
-    return JSON.parse(message.data) as ServerMessage;
+    const msg = JSON.parse(message);
+    if (msg.world !== undefined) {
+        return {
+            frame: msg.frame,
+            localPlayer: msg.localPlayer,
+            world: new Uint8Array(JSON.parse(msg.world)),
+        };
+    } else {
+        const inputs: PlayerInputs = {};
+        for (const key of Object.keys(msg.inputs)) {
+            inputs[key] = new Uint8Array(JSON.parse(msg.inputs[key]));
+        }
+        return {
+            frame: msg.frame,
+            inputs,
+            newPlayers: msg.newPlayers,
+            removedPlayers: msg.removedPlayers,
+        };
+    }
 }
 
 function isWorldState(message: ServerMessage): message is WorldStateMessage {
     const m = message as WorldStateMessage;
-    return m.frame !== undefined && m.world !== undefined;
+    return m.frame !== undefined && m.world !== undefined && m.localPlayer !== undefined;
 }

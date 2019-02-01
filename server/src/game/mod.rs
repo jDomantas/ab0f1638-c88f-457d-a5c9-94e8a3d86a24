@@ -123,6 +123,7 @@ impl Game {
         let ptr = self.module.buffer_ptr(&buffer_handle);
         let size = self.module.buffer_size(&buffer_handle);
         self.module.read_memory(ptr, size, into);
+        self.module.free_handle(buffer_handle);
     }
 
     pub fn serialize_input(&mut self, input: &Input, into: &mut Vec<u8>) {
@@ -130,6 +131,7 @@ impl Game {
         let ptr = self.module.buffer_ptr(&buffer_handle);
         let size = self.module.buffer_size(&buffer_handle);
         self.module.read_memory(ptr, size, into);
+        self.module.free_handle(buffer_handle);
     }
 
     pub fn generate_player_id(&mut self) -> PlayerId {
