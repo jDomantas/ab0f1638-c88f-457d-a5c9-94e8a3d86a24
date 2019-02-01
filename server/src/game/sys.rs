@@ -97,10 +97,10 @@ fn is_draw_signature(signature: &wasmi::Signature) -> bool {
 
 impl wasmi::ImportResolver for ImportResolver {
     fn resolve_func(
-        &self, 
-        module_name: &str, 
-        field_name: &str, 
-        signature: &wasmi::Signature
+        &self,
+        module_name: &str,
+        field_name: &str,
+        signature: &wasmi::Signature,
     ) -> Result<wasmi::FuncRef, Error> {
         match (module_name, field_name) {
             ("env", "log_str") if is_log_signature(signature) => {
@@ -117,28 +117,28 @@ impl wasmi::ImportResolver for ImportResolver {
     }
 
     fn resolve_global(
-        &self, 
-        _module_name: &str, 
-        _field_name: &str, 
-        _descriptor: &wasmi::GlobalDescriptor
+        &self,
+        _module_name: &str,
+        _field_name: &str,
+        _descriptor: &wasmi::GlobalDescriptor,
     ) -> Result<wasmi::GlobalRef, Error> {
         Err(Error::Instantiation("cannot resolve global".into()))
     }
 
     fn resolve_memory(
-        &self, 
-        _module_name: &str, 
-        _field_name: &str, 
-        _descriptor: &wasmi::MemoryDescriptor
+        &self,
+        _module_name: &str,
+        _field_name: &str,
+        _descriptor: &wasmi::MemoryDescriptor,
     ) -> Result<wasmi::MemoryRef, Error> {
         Err(Error::Instantiation("cannot resolve memory".into()))
     }
 
     fn resolve_table(
-        &self, 
-        _module_name: &str, 
-        _field_name: &str, 
-        _descriptor: &wasmi::TableDescriptor
+        &self,
+        _module_name: &str,
+        _field_name: &str,
+        _descriptor: &wasmi::TableDescriptor,
     ) -> Result<wasmi::TableRef, Error> {
         Err(Error::Instantiation("cannot resolve table".into()))
     }
@@ -159,9 +159,9 @@ impl wasmi::HostError for RuntimeError {}
 
 impl wasmi::Externals for Externals {
     fn invoke_index(
-        &mut self, 
-        index: usize, 
-        args: wasmi::RuntimeArgs
+        &mut self,
+        index: usize,
+        args: wasmi::RuntimeArgs,
     ) -> Result<Option<wasmi::RuntimeValue>, wasmi::Trap> {
         match index {
             0 => {
