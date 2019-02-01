@@ -2,6 +2,7 @@
 //! module, except for ownership - handles are taken by reference where
 //! corresponding wasm functions don't take ownership of the passed handle.
 
+use log::trace;
 use wasmi::{Error, ValueType};
 
 #[derive(Debug)]
@@ -150,7 +151,7 @@ struct Externals(wasmi::MemoryRef);
 struct RuntimeError(&'static str);
 
 impl std::fmt::Display for RuntimeError {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "RuntimeError({})", self.0)
     }
 }
@@ -161,7 +162,7 @@ impl wasmi::Externals for Externals {
     fn invoke_index(
         &mut self,
         index: usize,
-        args: wasmi::RuntimeArgs,
+        args: wasmi::RuntimeArgs<'_>,
     ) -> Result<Option<wasmi::RuntimeValue>, wasmi::Trap> {
         match index {
             0 => {

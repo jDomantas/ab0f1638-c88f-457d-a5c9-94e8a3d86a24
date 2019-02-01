@@ -1,5 +1,7 @@
 mod client;
 
+use log::{debug, trace};
+use serde_derive::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashMap};
 use std::str;
 use std::thread;

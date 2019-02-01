@@ -1,3 +1,4 @@
+use log::error;
 use std::fmt::Display;
 
 pub trait ResultExt {
