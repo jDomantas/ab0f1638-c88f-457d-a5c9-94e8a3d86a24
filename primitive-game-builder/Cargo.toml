@@ -2,6 +2,7 @@
 name = "primitive-game-builder"
 version = "0.1.0"
 authors = ["djade <djadenkus@gmail.com>"]
+edition = "2018"
 
 [dependencies]
 zip = "0.4.2"

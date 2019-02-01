@@ -1,5 +1,4 @@
-extern crate wasm_gc;
-extern crate zip;
+#![warn(rust_2018_idioms)]
 
 use std::fs;
 use std::io;
