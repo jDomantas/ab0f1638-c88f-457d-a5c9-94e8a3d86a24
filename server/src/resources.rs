@@ -11,19 +11,19 @@ impl ServerResources {
         ServerResources { package }
     }
 
-    pub fn index(&self) -> Cow<[u8]> {
+    pub fn index(&self) -> Cow<'_, [u8]> {
         fs::read(INDEX_PATH).unwrap_or_else(|_| panic!("failed to read {}", INDEX_PATH)).into()
     }
 
-    pub fn js(&self) -> Cow<[u8]> {
+    pub fn js(&self) -> Cow<'_, [u8]> {
         fs::read(JS_PATH).unwrap_or_else(|_| panic!("failed to read {}", JS_PATH)).into()
     }
 
-    pub fn source_map(&self) -> Option<Cow<[u8]>> {
+    pub fn source_map(&self) -> Option<Cow<'_, [u8]>> {
         Some(fs::read(SOURCE_MAP_PATH).unwrap_or_else(|_| panic!("failed to read {}", SOURCE_MAP_PATH)).into())
     }
 
-    pub fn css(&self) -> Cow<[u8]> {
+    pub fn css(&self) -> Cow<'_, [u8]> {
         fs::read(CSS_PATH).unwrap_or_else(|_| panic!("failed to read {}", CSS_PATH)).into()
     }
 

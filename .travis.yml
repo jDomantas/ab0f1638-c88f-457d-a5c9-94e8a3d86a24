@@ -2,7 +2,7 @@ matrix:
   include:
     - name: Server
       language: rust
-      rust: 1.30.0
+      rust: 1.32.0
       cache: cargo
       install:
         - cargo build -p server --verbose
@@ -12,7 +12,7 @@ matrix:
 
     - name: Primitive game
       language: rust
-      rust: 1.30.0
+      rust: 1.32.0
       cache: cargo
       install:
         - rustup target add wasm32-unknown-unknown
@@ -23,7 +23,7 @@ matrix:
 
     - name: Primitive game builder
       language: rust
-      rust: 1.30.0
+      rust: 1.32.0
       cache: cargo
       install:
         - cargo build -p primitive-game-builder --verbose

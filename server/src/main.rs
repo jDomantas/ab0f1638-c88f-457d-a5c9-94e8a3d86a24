@@ -1,14 +1,4 @@
-extern crate ws;
-#[macro_use]
-extern crate log;
-extern crate fern;
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-extern crate serde_json;
-extern crate structopt;
-extern crate wasmi;
-extern crate zip;
+#![warn(rust_2018_idioms)]
 
 mod game;
 mod network;

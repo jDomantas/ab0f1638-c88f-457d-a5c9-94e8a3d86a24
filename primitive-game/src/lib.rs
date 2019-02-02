@@ -1,3 +1,5 @@
+#![warn(rust_2018_idioms)]
+
 mod game;
 mod game_instance;
 mod squares;
