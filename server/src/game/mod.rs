@@ -1,6 +1,7 @@
 pub mod wasmi;
 
 use std::collections::{BTreeMap, BTreeSet};
+use std::fmt::{self, Debug};
 use std::hash::Hash;
 
 #[derive(Debug)]
@@ -68,5 +69,40 @@ impl<G: Game + ?Sized> Default for FrameUpdate<G> {
             removed_players: Default::default(),
             player_inputs: Default::default(),
         }
+    }
+}
+
+impl<G> PartialEq<FrameUpdate<G>> for FrameUpdate<G>
+where
+    G: Game,
+    G::PlayerId: Eq,
+    G::Input: Eq,
+{
+    fn eq(&self, rhs: &Self) -> bool {
+        let l = (&self.new_players, &self.removed_players, &self.player_inputs);
+        let r = (&rhs.new_players, &rhs.removed_players, &rhs.player_inputs);
+        l == r
+    }
+}
+
+impl<G> Eq for FrameUpdate<G>
+where
+    G: Game,
+    G::PlayerId: Eq,
+    G::Input: Eq,
+{ }
+
+impl<G> Debug for FrameUpdate<G>
+where
+    G: Game,
+    G::PlayerId: Debug,
+    G::Input: Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("FrameUpdate")
+            .field("new_players", &self.new_players)
+            .field("removed_players", &self.removed_players)
+            .field("player_inputs", &self.player_inputs)
+            .finish()
     }
 }

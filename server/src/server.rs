@@ -60,7 +60,7 @@ impl<G: Game> Server<G> {
             }
             Some(state @ ClientState::Connected) => {
                 // currently we only disallow joining in the past
-                if self.frame < on_frame {
+                if on_frame < self.frame {
                     Err(BadJoinError)
                 } else {
                     *state = ClientState::WaitingForJoin(WaitingClient {
@@ -223,4 +223,108 @@ impl<G: Game> InputQueue<G> {
 struct ClientInput<G: Game> {
     frame: u64,
     input: G::Input,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::game::{DeserializeError, ToBlob};
+
+    struct TestGame(u64);
+
+    impl ToBlob for String {
+        fn to_blob(&self) -> Vec<u8> { Vec::new() }
+    }
+
+    impl ToBlob for Vec<String> {
+        fn to_blob(&self) -> Vec<u8> { Vec::new() }
+    }
+
+    impl Game for TestGame {
+        type World = Vec<String>;
+        type Input = String;
+        type PlayerId = u64;
+
+        fn initial_world(&mut self) -> Self::World {
+            Vec::new()
+        }
+
+        fn update_world(&mut self, world: &Self::World) -> Self::World {
+            let mut world = world.clone();
+            world.push("update".into());
+            world
+        }
+
+        fn update_player(&mut self, world: &Self::World, player: Self::PlayerId, input: &Self::Input) -> Self::World {
+            let mut world = world.clone();
+            world.push(format!("input {}: {}", player, input));
+            world
+        }
+
+        fn add_player(&mut self, world: &Self::World, player: Self::PlayerId) -> Self::World {
+            let mut world = world.clone();
+            world.push(format!("add {}", player));
+            world
+        }
+
+        fn remove_player(&mut self, world: &Self::World, player: Self::PlayerId) -> Self::World {
+            let mut world = world.clone();
+            world.push(format!("remove {}", player));
+            world
+        }
+
+        fn deserialize_input(&mut self, from: &[u8]) -> Result<Self::Input, DeserializeError> {
+            Ok(String::from_utf8(from.to_vec()).expect("bad input"))
+        }
+
+        fn generate_player_id(&mut self) -> Self::PlayerId {
+            self.0 += 1;
+            self.0
+        }
+    }
+
+    fn server() -> Server<TestGame> {
+        Server::new(TestGame(0))
+    }
+
+    #[test]
+    fn ticking() {
+        let mut server = server();
+        // default FrameUpdate because there are no players - so no inputs
+        assert_eq!(server.game_tick(), FrameUpdate::default());
+        assert_eq!(server.game_tick(), FrameUpdate::default());
+        assert_eq!(server.world, vec!["update", "update"]);
+        assert_eq!(server.frame, 2);
+    }
+
+    #[test]
+    fn connect() {
+        let mut server = server();
+        server.game_tick();
+        let (_client, world) = server.client_connected();
+        assert_eq!(world.world, &vec!["update"]);
+        assert_eq!(world.frame, 1);
+    }
+
+    #[test]
+    fn connect_and_join() {
+        let mut server = server();
+        let (client, _world) = server.client_connected();
+        assert!(server.client_joined(client, 1).is_ok());
+        // default Frame update because it's tick 0
+        assert_eq!(server.game_tick(), FrameUpdate::default());
+        // frame 1 - a new player should appear
+        // test game generates player ids sequentially starting from 1
+        let mut expected = FrameUpdate::default();
+        expected.new_player(1);
+        assert_eq!(server.game_tick(), expected);
+    }
+
+    #[test]
+    fn joining_twice_is_error() {
+        let mut server = server();
+        let (client, _world) = server.client_connected();
+        assert!(server.client_joined(client, 1).is_ok());
+        assert!(server.client_joined(client, 1).is_err());
+    }
 }
