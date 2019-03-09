@@ -44,7 +44,7 @@ export class NetworkHandler {
 
     public sendInput(input: LocalPlayerInput) {
         this.client.send(JSON.stringify({
-            "input": {
+            input: {
                 frame: input.frame,
                 input: [].slice.call(input.input),
             },
@@ -53,7 +53,7 @@ export class NetworkHandler {
 
     public joinGame(frame: number) {
         console.info("Joining on frame:", frame);
-        this.client.send(JSON.stringify({ "join": { frame } }));
+        this.client.send(JSON.stringify({ join: { frame } }));
     }
 
     private error(err: Error) {

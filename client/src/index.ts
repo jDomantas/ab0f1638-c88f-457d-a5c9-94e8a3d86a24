@@ -53,7 +53,7 @@ WebAssembly
 
         handler.onPlayerInputs = inputs => {
             client.step(inputs);
-            let sendFor = client.currentFrameNumber + clientRushingFrames;
+            const sendFor = client.currentFrameNumber + clientRushingFrames;
             while (sendFor > lastSentInputFrame) {
                 lastSentInputFrame += 1;
                 sendInput(lastSentInputFrame);
