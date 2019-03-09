@@ -307,9 +307,10 @@ mod tests {
         Server::new(TestGame(0))
     }
 
-    fn server_with_client() -> (Server<TestGame>, ClientId) {
+    fn server_with_client() -> (Server<TestGame>, ClientId, u64) {
         let mut server = server();
-        let (client, _world) = server.client_connected();
+        let (client, world) = server.client_connected();
+        let local_player = world.local_player_id;
         assert!(server.client_joined(client, 0).is_ok());
 
         // player is added on next tick
@@ -318,7 +319,7 @@ mod tests {
         expected.new_player(1);
         assert_eq!(tick, expected);
 
-        (server, client)
+        (server, client, local_player)
     }
 
     #[test]
@@ -343,14 +344,15 @@ mod tests {
     #[test]
     fn connect_and_join() {
         let mut server = server();
-        let (client, _world) = server.client_connected();
+        let (client, world) = server.client_connected();
+        let local_player = world.local_player_id;
         assert!(server.client_joined(client, 1).is_ok());
         // default Frame update because it's tick 0
         assert_eq!(server.game_tick(), FrameUpdate::default());
         // frame 1 - a new player should appear
         // test game generates player ids sequentially starting from 1
         let mut expected = FrameUpdate::default();
-        expected.new_player(1);
+        expected.new_player(local_player);
         assert_eq!(server.game_tick(), expected);
     }
 
@@ -365,38 +367,39 @@ mod tests {
     #[test]
     fn client_input() {
         let mut server = server();
-        let (client, _world) = server.client_connected();
+        let (client, world) = server.client_connected();
+        let local_player = world.local_player_id;
         assert!(server.client_joined(client, 0).is_ok());
 
         // player is added on next tick
         let tick = server.game_tick();
         let mut expected = FrameUpdate::default();
-        expected.new_player(1);
+        expected.new_player(local_player);
         assert_eq!(tick, expected);
 
         assert!(server.client_input(client, 1, "abc".as_bytes()).is_ok());
 
         let tick = server.game_tick();
         let mut expected = FrameUpdate::default();
-        expected.input(1, "abc".to_string());
+        expected.input(local_player, "abc".to_string());
         assert_eq!(tick, expected);
     }
 
     #[test]
     fn connect_join_leave() {
-        let (mut server, client) = server_with_client();
+        let (mut server, client, local_player) = server_with_client();
 
         server.client_disconnected(client);
 
         let tick = server.game_tick();
         let mut expected = FrameUpdate::default();
-        expected.remove_player(1);
+        expected.remove_player(local_player);
         assert_eq!(tick, expected);
     }
 
     #[test]
     fn input_skip() {
-        let (mut server, _client) = server_with_client();
+        let (mut server, _client, _local_player) = server_with_client();
 
         // client does not send any inputs, so no inputs in update
         assert_eq!(server.game_tick(), FrameUpdate::default());
