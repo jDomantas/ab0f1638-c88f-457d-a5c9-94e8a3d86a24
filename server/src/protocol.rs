@@ -13,6 +13,7 @@ pub struct Update {
 #[serde(rename_all = "camelCase")]
 pub struct World {
     pub frame: u64,
+    pub local_player_id: u64,
     pub world: Vec<u8>,
 }
 
@@ -44,11 +45,15 @@ mod tests {
 
     #[test]
     fn world_serialization() {
-        let world = World { frame: 123, world: vec![4, 5, 6] };
+        let world = World {
+            frame: 123,
+            local_player_id: 4,
+            world: vec![4, 5, 6],
+        };
         let json = world_to_json(&world);
         assert_eq!(
             json,
-            r#"  {"frame":123,"world":[4,5,6]}  "#.trim(),
+            r#"  {"frame":123,"localPlayerId":4,"world":[4,5,6]}  "#.trim(),
         );
     }
 

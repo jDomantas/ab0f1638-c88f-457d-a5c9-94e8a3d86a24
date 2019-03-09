@@ -61,6 +61,7 @@ impl<G: Game> GameLoop<G> {
         self.clients.insert(connection, client);
         let world = protocol::World {
             frame: world.frame,
+            local_player_id: world.local_player_id,
             world: world.world.to_blob(),
         };
         let message = Message::new(protocol::world_to_json(&world).into_bytes());
