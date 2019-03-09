@@ -61,6 +61,8 @@ impl<G: Game + ?Sized> FrameUpdate<G> {
         self.player_inputs.insert(player, input);
     }
 
+    // This is only used in tests, so cfg(test) effectively silences dead code warning
+    #[cfg(test)]
     pub fn remove_player(&mut self, player: G::PlayerId) {
         self.removed_players.insert(player);
     }
