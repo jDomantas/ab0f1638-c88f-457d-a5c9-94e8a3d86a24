@@ -43,6 +43,11 @@ impl<G: Game> Server<G> {
         let id = ClientId(self.next_client_id);
         self.next_client_id += 1;
         let player_id = self.game.generate_player_id();
+        trace!(
+            "client connected, got client id {:?}, player id {}",
+            id,
+            player_id.into(),
+        );
         self.clients.insert(id, ClientState::Connected(player_id));
         let world = WorldState {
             frame: self.frame,
@@ -63,13 +68,16 @@ impl<G: Game> Server<G> {
             Some(ClientState::WaitingForJoin { .. }) |
             Some(ClientState::InGame(_)) => {
                 // client tried to join multiple times, should be disconnected
+                trace!("client {:?} tried to join multiple times", client);
                 Err(BadJoinError)
             }
             Some(ClientState::Connected(player_id)) => {
                 // currently we only disallow joining in the past
                 if on_frame < self.frame {
+                    trace!("client {:?} tried to join in the past", client);
                     Err(BadJoinError)
                 } else {
+                    trace!("client {:?} will join on frame {}", client, on_frame);
                     let new_state = ClientState::WaitingForJoin(WaitingClient {
                         join_frame: on_frame,
                         player_id: *player_id,
@@ -99,10 +107,12 @@ impl<G: Game> Server<G> {
             Some(ClientState::Connected(_)) => {
                 // client tried to send inputs before joining the game,
                 // disconnect them
+                trace!("client {:?} sent inputs before joining", client);
                 Err(BadInputError)
             }
             Some(ClientState::WaitingForJoin(WaitingClient { inputs, .. })) |
             Some(ClientState::InGame(InGameClient { inputs, .. })) => {
+                trace!("client {:?} sent inputs for frame {}", client, frame);
                 self.game
                     .deserialize_input(serialized)
                     .map_err(|_| BadInputError)
@@ -110,6 +120,7 @@ impl<G: Game> Server<G> {
             }
         };
         if result.is_err() {
+            trace!("client {:?} sent bad inputs, disconnecting", client);
             self.client_disconnected(client);
         }
         result
