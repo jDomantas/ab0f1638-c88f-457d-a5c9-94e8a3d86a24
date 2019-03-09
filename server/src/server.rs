@@ -287,6 +287,20 @@ mod tests {
         Server::new(TestGame(0))
     }
 
+    fn server_with_client() -> (Server<TestGame>, ClientId) {
+        let mut server = server();
+        let (client, _world) = server.client_connected();
+        assert!(server.client_joined(client, 0).is_ok());
+
+        // player is added on next tick
+        let tick = server.game_tick();
+        let mut expected = FrameUpdate::default();
+        expected.new_player(1);
+        assert_eq!(tick, expected);
+
+        (server, client)
+    }
+
     #[test]
     fn ticking() {
         let mut server = server();
@@ -346,5 +360,27 @@ mod tests {
         let mut expected = FrameUpdate::default();
         expected.input(1, "abc".to_string());
         assert_eq!(tick, expected);
+    }
+
+    #[test]
+    fn connect_join_leave() {
+        let (mut server, client) = server_with_client();
+
+        server.client_disconnected(client);
+
+        let tick = server.game_tick();
+        let mut expected = FrameUpdate::default();
+        expected.remove_player(1);
+        assert_eq!(tick, expected);
+    }
+
+    #[test]
+    fn input_skip() {
+        let (mut server, _client) = server_with_client();
+
+        // client does not send any inputs, so no inputs in update
+        assert_eq!(server.game_tick(), FrameUpdate::default());
+        assert_eq!(server.game_tick(), FrameUpdate::default());
+        assert_eq!(server.game_tick(), FrameUpdate::default());
     }
 }

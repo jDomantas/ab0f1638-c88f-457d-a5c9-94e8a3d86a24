@@ -60,6 +60,10 @@ impl<G: Game + ?Sized> FrameUpdate<G> {
     pub fn input(&mut self, player: G::PlayerId, input: G::Input) {
         self.player_inputs.insert(player, input);
     }
+
+    pub fn remove_player(&mut self, player: G::PlayerId) {
+        self.removed_players.insert(player);
+    }
 }
 
 impl<G: Game + ?Sized> Default for FrameUpdate<G> {
