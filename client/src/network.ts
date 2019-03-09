@@ -3,7 +3,7 @@ import { w3cwebsocket as WebSocketClient } from "websocket";
 type ServerMessage = WorldStateMessage | PlayerInputMessage;
 
 export interface WorldStateMessage {
-    localPlayer: number;
+    localPlayerId: number;
     frame: number;
     world: Uint8Array;
 }
@@ -13,7 +13,6 @@ export interface PlayerInputs {
 }
 
 export interface PlayerInputMessage {
-    frame: number;
     newPlayers: number[];
     removedPlayers: number[];
     inputs: PlayerInputs;
@@ -45,9 +44,16 @@ export class NetworkHandler {
 
     public sendInput(input: LocalPlayerInput) {
         this.client.send(JSON.stringify({
-            frame: input.frame,
-            input: [].slice.call(input.input),
+            "input": {
+                frame: input.frame,
+                input: [].slice.call(input.input),
+            },
         }));
+    }
+
+    public joinGame(frame: number) {
+        console.info("Joining on frame:", frame);
+        this.client.send(JSON.stringify({ "join": { frame } }));
     }
 
     private error(err: Error) {
@@ -85,13 +91,13 @@ function parseMessagePayload(message: any): ServerMessage {
     if (msg.world !== undefined) {
         return {
             frame: msg.frame,
-            localPlayer: msg.localPlayer,
-            world: new Uint8Array(JSON.parse(msg.world)),
+            localPlayerId: msg.localPlayerId,
+            world: new Uint8Array(msg.world),
         };
     } else {
         const inputs: PlayerInputs = {};
         for (const key of Object.keys(msg.inputs)) {
-            inputs[key] = new Uint8Array(JSON.parse(msg.inputs[key]));
+            inputs[key] = new Uint8Array(msg.inputs[key]);
         }
         return {
             frame: msg.frame,
@@ -104,5 +110,5 @@ function parseMessagePayload(message: any): ServerMessage {
 
 function isWorldState(message: ServerMessage): message is WorldStateMessage {
     const m = message as WorldStateMessage;
-    return m.frame !== undefined && m.world !== undefined && m.localPlayer !== undefined;
+    return m.frame !== undefined && m.world !== undefined && m.localPlayerId !== undefined;
 }

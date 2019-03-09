@@ -29,27 +29,35 @@ const keyState = {
     other: 0,
 };
 
+// Client will send inputs this many frames ahead.
+// It could also do client side prediction, but that's to be implemented later.
+export const clientRushingFrames = 10;
+
 WebAssembly
     .instantiateStreaming(fetch("/game/code.wasm"), imports)
     .then(wasm => {
         const handler = new NetworkHandler();
         const game = new Game(wasm.instance);
         let client: Client;
+        let lastSentInputFrame: number;
 
         handler.onWorldState = worldState => {
             console.debug("Initial world state:", worldState);
-            const playerId = new PlayerId(worldState.localPlayer);
+            const playerId = new PlayerId(worldState.localPlayerId);
             client = new Client(game, playerId, worldState.frame, worldState.world);
-            sendInput(client.currentFrameNumber + 1);
+            handler.joinGame(client.currentFrameNumber + clientRushingFrames);
+            sendInput(client.currentFrameNumber + clientRushingFrames + 1);
+            lastSentInputFrame = client.currentFrameNumber + clientRushingFrames + 1;
             client.runGameLoop();
         };
 
         handler.onPlayerInputs = inputs => {
-            if (inputs.frame <= client.currentFrameNumber) {
-                return;
-            }
             client.step(inputs);
-            sendInput(inputs.frame + 1);
+            let sendFor = client.currentFrameNumber + clientRushingFrames;
+            while (sendFor > lastSentInputFrame) {
+                lastSentInputFrame += 1;
+                sendInput(lastSentInputFrame);
+            }
         };
 
         function sendInput(frame: number) {
@@ -59,7 +67,7 @@ WebAssembly
             input.free();
             handler.sendInput({
                 frame,
-                input: Array.prototype.slice.call(serialized),
+                input: serialized,
             });
         }
     });
