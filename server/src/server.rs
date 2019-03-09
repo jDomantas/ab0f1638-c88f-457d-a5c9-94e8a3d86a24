@@ -327,4 +327,24 @@ mod tests {
         assert!(server.client_joined(client, 1).is_ok());
         assert!(server.client_joined(client, 1).is_err());
     }
+
+    #[test]
+    fn client_input() {
+        let mut server = server();
+        let (client, _world) = server.client_connected();
+        assert!(server.client_joined(client, 0).is_ok());
+
+        // player is added on next tick
+        let tick = server.game_tick();
+        let mut expected = FrameUpdate::default();
+        expected.new_player(1);
+        assert_eq!(tick, expected);
+
+        assert!(server.client_input(client, 1, "abc".as_bytes()).is_ok());
+
+        let tick = server.game_tick();
+        let mut expected = FrameUpdate::default();
+        expected.input(1, "abc".to_string());
+        assert_eq!(tick, expected);
+    }
 }
