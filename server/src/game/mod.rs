@@ -1,144 +1,114 @@
-pub mod sys;
+pub mod wasmi;
 
-use std::ops::Deref;
-use std::rc::Rc;
-use self::sys::{Handle, Module};
+use std::collections::{BTreeMap, BTreeSet};
+use std::fmt::{self, Debug};
+use std::hash::Hash;
 
-struct AutoHandle {
-    raw: Option<Handle>,
-    module: Rc<Module>,
+#[derive(Debug)]
+pub struct DeserializeError;
+
+pub trait ToBlob {
+    fn to_blob(&self) -> Vec<u8>;
 }
 
-impl Drop for AutoHandle {
-    fn drop(&mut self) {
-        self.module.free_handle(self.raw.take().unwrap());
-    }
-}
+pub trait Game {
+    type World: ToBlob;
+    type Input: ToBlob;
+    type PlayerId: Eq + Ord + Hash + Copy + Into<u64>;
 
-impl Deref for AutoHandle {
-    type Target = Handle;
+    fn initial_world(&mut self) -> Self::World;
+    fn update_world(&mut self, world: &Self::World) -> Self::World;
+    fn update_player(&mut self, world: &Self::World, player: Self::PlayerId, input: &Self::Input) -> Self::World;
+    fn add_player(&mut self, world: &Self::World, player: Self::PlayerId) -> Self::World;
+    fn remove_player(&mut self, world: &Self::World, player: Self::PlayerId) -> Self::World;
+    fn deserialize_input(&mut self, from: &[u8]) -> Result<Self::Input, DeserializeError>;
+    fn generate_player_id(&mut self) -> Self::PlayerId;
 
-    fn deref(&self) -> &Self::Target {
-        self.raw.as_ref().unwrap()
-    }
-}
-
-pub struct World {
-    handle: AutoHandle,
-}
-
-pub struct Input {
-    handle: AutoHandle,
-}
-
-#[derive(PartialEq, Eq, Ord, PartialOrd, Debug, Hash, Copy, Clone)]
-pub struct PlayerId {
-    id: u32,
-}
-
-impl PlayerId {
-    pub fn to_u32(self) -> u32 {
-        self.id
-    }
-}
-
-pub struct Game {
-    next_player_id: u32,
-    module: Rc<Module>,
-}
-
-impl Game {
-    pub fn new(module: sys::Module) -> Game {
-        Game {
-            next_player_id: 0,
-            module: Rc::new(module),
-        }
-    }
-
-    pub fn initial_world(&mut self) -> World {
-        World {
-            handle: AutoHandle {
-                raw: Some(self.module.initial_world()),
-                module: self.module.clone(),
-            },
-        }
-    }
-
-    pub fn update_world(&mut self, world: &World) -> World {
-        World {
-            handle: AutoHandle {
-                raw: Some(self.module.update_world(&world.handle)),
-                module: self.module.clone(),
-            },
-        }
-    }
-
-    pub fn update_player(&mut self, player: PlayerId, input: &Input, world: &World) -> World {
-        World {
-            handle: AutoHandle {
-                raw: Some(self.module.update_player(&world.handle, player.to_u32(), &input.handle)),
-                module: self.module.clone(),
-            },
-        }
-    }
-
-    pub fn remove_player(&mut self, player: PlayerId, world: &World) -> World {
-        World {
-            handle: AutoHandle {
-                raw: Some(self.module.remove_player(&world.handle, player.to_u32())),
-                module: self.module.clone(),
-            },
-        }
-    }
-
-    pub fn add_player(&mut self, player: PlayerId, world: &World) -> World {
-        World {
-            handle: AutoHandle {
-                raw: Some(self.module.add_player(&world.handle, player.to_u32())),
-                module: self.module.clone(),
-            },
-        }
-    }
-
-    pub fn deserialize_input(&mut self, data: &[u8]) -> Option<Input> {
-        if data.len() > i32::max_value() as usize {
-            panic!("buffer too large to deserialize");
-        }
-        let buffer_handle = self.module.allocate_buffer(data.len() as u32);
-        let ptr = self.module.buffer_ptr(&buffer_handle);
-        self.module.write_memory(ptr, data);
-        // FIXME: how to communicate deserialization failure?
-        let input = self.module.deserialize_input(&buffer_handle);
-        self.module.free_handle(buffer_handle);
-        Some(Input {
-            handle: AutoHandle {
-                raw: Some(input),
-                module: self.module.clone(),
-            },
-        })
-    }
-
-    pub fn serialize_world(&mut self, world: &World, into: &mut Vec<u8>) {
-        let buffer_handle = self.module.serialize_world(&world.handle);
-        let ptr = self.module.buffer_ptr(&buffer_handle);
-        let size = self.module.buffer_size(&buffer_handle);
-        self.module.read_memory(ptr, size, into);
-        self.module.free_handle(buffer_handle);
-    }
-
-    pub fn serialize_input(&mut self, input: &Input, into: &mut Vec<u8>) {
-        let buffer_handle = self.module.serialize_input(&input.handle);
-        let ptr = self.module.buffer_ptr(&buffer_handle);
-        let size = self.module.buffer_size(&buffer_handle);
-        self.module.read_memory(ptr, size, into);
-        self.module.free_handle(buffer_handle);
-    }
-
-    pub fn generate_player_id(&mut self) -> PlayerId {
-        let id = PlayerId {
-            id: self.next_player_id,
+    fn apply_update(&mut self, world: &Self::World, update: &FrameUpdate<Self>) -> Self::World {
+        // FIXME: gross
+        let mut removed = update.removed_players.iter();
+        let mut world = if let Some(&player) = removed.next() {
+            let mut world = self.remove_player(world, player);
+            for &player in removed {
+                world = self.remove_player(&world, player);
+            }
+            self.update_world(&world)
+        } else {
+            self.update_world(world)
         };
-        self.next_player_id += 1;
-        id
+        for (&player, input) in &update.player_inputs {
+            world = self.update_player(&world, player, input);
+        }
+        for &player in &update.new_players {
+            world = self.add_player(&world, player);
+        }
+        world
+    }
+}
+
+pub struct FrameUpdate<G: Game + ?Sized> {
+    pub new_players: BTreeSet<G::PlayerId>,
+    pub removed_players: BTreeSet<G::PlayerId>,
+    pub player_inputs: BTreeMap<G::PlayerId, G::Input>,
+}
+
+impl<G: Game + ?Sized> FrameUpdate<G> {
+    pub fn new_player(&mut self, player: G::PlayerId) {
+        self.new_players.insert(player);
+    }
+
+    pub fn input(&mut self, player: G::PlayerId, input: G::Input) {
+        self.player_inputs.insert(player, input);
+    }
+
+    // This is only used in tests, so cfg(test) effectively silences dead code warning
+    #[cfg(test)]
+    pub fn remove_player(&mut self, player: G::PlayerId) {
+        self.removed_players.insert(player);
+    }
+}
+
+impl<G: Game + ?Sized> Default for FrameUpdate<G> {
+    fn default() -> Self {
+        FrameUpdate {
+            new_players: Default::default(),
+            removed_players: Default::default(),
+            player_inputs: Default::default(),
+        }
+    }
+}
+
+impl<G> PartialEq<FrameUpdate<G>> for FrameUpdate<G>
+where
+    G: Game,
+    G::PlayerId: Eq,
+    G::Input: Eq,
+{
+    fn eq(&self, rhs: &Self) -> bool {
+        let l = (&self.new_players, &self.removed_players, &self.player_inputs);
+        let r = (&rhs.new_players, &rhs.removed_players, &rhs.player_inputs);
+        l == r
+    }
+}
+
+impl<G> Eq for FrameUpdate<G>
+where
+    G: Game,
+    G::PlayerId: Eq,
+    G::Input: Eq,
+{ }
+
+impl<G> Debug for FrameUpdate<G>
+where
+    G: Game,
+    G::PlayerId: Debug,
+    G::Input: Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("FrameUpdate")
+            .field("new_players", &self.new_players)
+            .field("removed_players", &self.removed_players)
+            .field("player_inputs", &self.player_inputs)
+            .finish()
     }
 }

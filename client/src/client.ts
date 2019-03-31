@@ -29,7 +29,7 @@ export class Client {
 
         inputs.newPlayers.forEach(id => this.addPlayer(id));
 
-        this.currentFrame = inputs.frame;
+        this.currentFrame += 1;
     }
 
     public runGameLoop() {

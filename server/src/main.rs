@@ -6,6 +6,8 @@ mod package;
 mod resources;
 mod result_ext;
 mod server;
+mod protocol;
+mod game_loop;
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -23,14 +25,14 @@ fn main() {
     let options = Opt::from_args();
     setup_logger();
     let package = load_package(&options.package);
-    let mut game = create_game(&package);
+    let game = create_game(&package);
     let resources = Arc::new(resources::ServerResources::load(package));
-    let world = game.initial_world();
 
     let websocket_server = network::WebsocketServer::listen(resources, "127.0.0.1:8000");
-    let mut server = server::Server::new(websocket_server, game, world);
+    let server = server::Server::new(game);
+    let mut game_loop = game_loop::GameLoop::new(websocket_server, server);
 
-    server.run();
+    game_loop.run();
 }
 
 fn setup_logger() {
@@ -68,9 +70,9 @@ fn load_package<P: AsRef<Path>>(path: P) -> Package {
     }
 }
 
-fn create_game(package: &Package) -> game::Game {
-    match game::sys::Module::from_buffer(&package.wasm_module) {
-        Ok(module) => game::Game::new(module),
+fn create_game(package: &Package) -> game::wasmi::WasmiGame {
+    match game::wasmi::sys::Module::from_buffer(&package.wasm_module) {
+        Ok(module) => game::wasmi::WasmiGame::new(module),
         Err(e) => {
             eprintln!("Failed to load game code");
             eprintln!("{:?}", e);
